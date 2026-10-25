@@ -57,10 +57,10 @@
             '';
 
           meta = with pkgs.lib; {
-            description = "Riff - audio player made for humans";
-            homepage = "https://github.com/rootscripts/riff";
+            description = "Riff SC - dedicated desktop SoundCloud client";
+            homepage = "https://github.com/factorydeath/riff-sc";
             license = licenses.mit;
-            mainProgram = "riff";
+            mainProgram = "riff-sc";
             platforms = platforms.linux ++ platforms.darwin;
           };
         };

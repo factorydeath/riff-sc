@@ -14,7 +14,7 @@ Add the input:
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    riff.url = "github:rootscripts/riff";
+    riff.url = "github:factorydeath/riff-sc";
   };
 
   outputs = { self, nixpkgs, riff, ... }: {
@@ -34,7 +34,7 @@ For home-manager, inside your home config:
 
 ```nix
 {
-  inputs.riff.url = "github:rootscripts/riff";
+  inputs.riff.url = "github:factorydeath/riff-sc";
 
   outputs = { nixpkgs, home-manager, riff, ... }: {
     homeConfigurations.you = home-manager.lib.homeManagerConfiguration {
@@ -55,7 +55,7 @@ Useful when you want `pkgs.riff` available everywhere rather than referencing `r
 
 ```nix
 {
-  inputs.riff.url = "github:rootscripts/riff";
+  inputs.riff.url = "github:factorydeath/riff-sc";
 
   outputs = { nixpkgs, riff, ... }:
     let
@@ -77,10 +77,10 @@ Useful when you want `pkgs.riff` available everywhere rather than referencing `r
 
 ```bash
 # install into your profile
-nix profile install github:rootscripts/riff
+nix profile install github:factorydeath/riff-sc
 
 # or just run it once
-nix run github:rootscripts/riff
+nix run github:factorydeath/riff-sc
 
 # from a local checkout
 nix profile install .
@@ -92,7 +92,7 @@ After installing, `riff` is on your `PATH` and a `Riff` desktop entry + icon are
 ## Development shell
 
 ```bash
-git clone https://github.com/rootscripts/riff
+git clone https://github.com/factorydeath/riff-sc
 cd riff
 nix develop          # nodejs, python3, yt-dlp, ffmpeg
 npm install

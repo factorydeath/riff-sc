@@ -84,7 +84,6 @@ if (process.argv.includes('lyrics') || process.argv.includes('--lyrics')) {
 
 function runGUI() {
   const { startServer, PORT, getServerToken } = require('./server');
-  const discordRPC = require('./discord-rpc');
 
   let mainWindow = null;
   const allowMulti = !!readStartupConfig().multiInstance;
@@ -197,7 +196,7 @@ function runGUI() {
     const primaryDisplay = screen.getPrimaryDisplay();
     const scaleFactor = primaryDisplay.scaleFactor;
 
-    app.setAppUserModelId('io.github.rootscripts.riff');
+    app.setAppUserModelId('io.github.factorydeath.riff-sc');
     mainWindow = new BrowserWindow({
       x: initialBounds.x,
       y: initialBounds.y,
@@ -206,7 +205,7 @@ function runGUI() {
       minWidth: 360,
                                    minHeight: 500,
                                    backgroundColor: firstRun ? '#8d5ef2' : '#000000',
-                                   title: 'Riff',
+                                   title: 'Riff SC',
                                    icon: path.join(__dirname, 'assets', 'icon.png'),
                                    frame: false,
                                    titleBarStyle: 'hidden',
@@ -252,15 +251,17 @@ function runGUI() {
       return { action: 'deny' };
     });
 
+    mainWindow.webContents.on('will-navigate', (e, url) => {
+      if (url.startsWith('file://')) return;
+      e.preventDefault();
+      if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+    });
+
     mainWindow.on('minimize', () => {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('window-visibility', false);
         if (global.gc) global.gc();
       }
-    });
-
-    mainWindow.on('blur', () => {
-      if (global.gc) global.gc();
     });
 
     mainWindow.on('restore', () => {
@@ -280,26 +281,36 @@ function runGUI() {
         mainWindow.webContents.send('window-visibility', true);
       }
     });
-    mainWindow.on('resize', persistWindowState);
-    mainWindow.on('move', persistWindowState);
-    mainWindow.on('maximize', persistWindowState);
-    mainWindow.on('unmaximize', persistWindowState);
-    mainWindow.on('enter-full-screen', persistWindowState);
-    mainWindow.on('leave-full-screen', persistWindowState);
-    mainWindow.on('close', (e) => {
+  let windowStatePersistTimer = null;
+  function schedulePersistWindowState() {
+    if (windowStatePersistTimer) return;
+    windowStatePersistTimer = setTimeout(() => {
+      windowStatePersistTimer = null;
       persistWindowState();
+    }, 400);
+  }
+
+  mainWindow.on('resize', schedulePersistWindowState);
+  mainWindow.on('move', schedulePersistWindowState);
+  mainWindow.on('maximize', persistWindowState);
+  mainWindow.on('unmaximize', persistWindowState);
+  mainWindow.on('enter-full-screen', persistWindowState);
+  mainWindow.on('leave-full-screen', persistWindowState);
+  mainWindow.on('close', (e) => {
+    if (windowStatePersistTimer) {
+      clearTimeout(windowStatePersistTimer);
+      windowStatePersistTimer = null;
+    }
+    persistWindowState();
       if (trayOnClose && tray && !isQuitting) {
         e.preventDefault();
         mainWindow.hide();
       }
     });
 
-    discordRPC.initRPC();
   }
 
   ipcMain.removeHandler('get-server-port');
-  ipcMain.removeHandler('discord-rpc-get-enabled');
-  ipcMain.removeHandler('discord-rpc-get-connected');
   ipcMain.removeHandler('pick-media');
   ipcMain.removeHandler('import-audio-files');
 
@@ -316,10 +327,6 @@ function runGUI() {
 
     ipcMain.on('window-close', () => {
       if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
-    });
-
-    ipcMain.on('open-external', (e, u) => {
-      if (/^https:\/\/accounts\.spotify\.com\//.test(String(u))) shell.openExternal(u);
     });
 
     let mainLogCount = 0;
@@ -355,21 +362,6 @@ function runGUI() {
       ipcMain.handle('get-audio-output-info', async () => getSystemAudioOutputInfo());
       require('./themes').register(() => mainWindow);
       require('./plugins').register(() => mainWindow);
-
-      ipcMain.on('discord-rpc-update', (event, trackInfo) => {
-        discordRPC.updatePresence(trackInfo);
-      });
-
-      ipcMain.on('discord-rpc-clear', () => {
-        discordRPC.clearPresence();
-      });
-
-      ipcMain.on('discord-rpc-set-enabled', (event, enabled) => {
-        discordRPC.setEnabled(enabled);
-      });
-
-      ipcMain.handle('discord-rpc-get-enabled', () => discordRPC.getEnabled());
-      ipcMain.handle('discord-rpc-get-connected', () => discordRPC.getConnected());
 
       ipcMain.handle('get-cache-size', async () => {
         const fs = require('fs');
@@ -609,8 +601,8 @@ function runGUI() {
           isMiniWindow = true;
           preMiniBounds = mainWindow.isMaximized() ? mainWindow.getNormalBounds() : mainWindow.getBounds();
           if (mainWindow.isMaximized()) mainWindow.unmaximize();
-          mainWindow.setMinimumSize(320, 120);
-          mainWindow.setSize(380, 160);
+          mainWindow.setMinimumSize(360, 150);
+          mainWindow.setSize(420, 176);
           mainWindow.setAlwaysOnTop(true);
           return true;
         } else {
@@ -632,7 +624,7 @@ function runGUI() {
           let trayIcon = nativeImage.createFromPath(iconPath);
           trayIcon = trayIcon.resize({ width: 22, height: 22 });
           tray = new Tray(trayIcon);
-          tray.setToolTip('Riff');
+          tray.setToolTip('Riff SC');
           const contextMenu = Menu.buildFromTemplate([
             {
               label: 'Show/Hide',
@@ -685,7 +677,6 @@ function runGUI() {
       });
 
       app.on('window-all-closed', () => {
-        discordRPC.destroyRPC();
         if (process.platform !== 'darwin') app.quit();
       });
 }

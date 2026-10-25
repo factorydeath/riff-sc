@@ -29,11 +29,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     }
   },
 
-  discordRpcUpdate: (trackInfo) => ipcRenderer.send('discord-rpc-update', trackInfo),
-  discordRpcClear: () => ipcRenderer.send('discord-rpc-clear'),
-  discordRpcSetEnabled: (enabled) => ipcRenderer.send('discord-rpc-set-enabled', enabled),
-  discordRpcGetEnabled: () => ipcRenderer.invoke('discord-rpc-get-enabled'),
-  discordRpcGetConnected: () => ipcRenderer.invoke('discord-rpc-get-connected'),
   getCacheSize: () => ipcRenderer.invoke('get-cache-size'),
   clearCache: () => ipcRenderer.invoke('clear-cache'),
   getDataDir: () => ipcRenderer.invoke('get-data-dir'),
@@ -75,9 +70,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removePlugin: (file) => ipcRenderer.send('plugins-remove', file),
   importPlugins: () => ipcRenderer.invoke('plugins-import'),
   getAppCss: () => ipcRenderer.invoke('read-app-css'),
-  openExternal: (u) => ipcRenderer.send('open-external', u),
   logError: (level, message, stack) => ipcRenderer.send('log-error', { level, message, stack }),
   openLogsFolder: () => ipcRenderer.send('open-logs-folder'),
   getDiagnostics: () => ipcRenderer.invoke('get-diagnostics'),
   getAudioOutputInfo: () => ipcRenderer.invoke('get-audio-output-info'),
+  scLogin: () => ipcRenderer.invoke('sc-login'),
+  scLogout: () => ipcRenderer.invoke('sc-logout'),
 });

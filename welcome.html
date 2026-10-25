@@ -6,7 +6,7 @@
   <title>Welcome to Riff - Setup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 
   <style>
     :root {
@@ -439,12 +439,6 @@
       --m-subtle: #ded5e1;
       --m-accent: #6750a4;
     }
-    .mockup-window.mock-discord {
-      background-color: #1e1f22;
-      --m-surface: #2b2d31;
-      --m-subtle: #383a40;
-      --m-accent: #5865f2;
-    }
     .mockup-window.mock-light-purple-vibrant {
       background-color: #7943ea;
       --m-surface: #c7b6e9;
@@ -666,10 +660,11 @@
 
     .sl.hue input::-webkit-slider-thumb {
       box-sizing: border-box;
-      width: 10px;
-      border-radius: 5px;
+      width: 12px;
+      border-radius: 6px;
       background-color: #ffffff;
-      border: 3px solid var(--text-color);
+      border: 3px solid var(--text-color) !important;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) !important;
     }
 
     .sl.hue input:active::-webkit-slider-thumb {
@@ -1069,19 +1064,6 @@
               <span class="theme-card-name">Light</span>
             </div>
 
-            <div class="theme-card" data-preset="discord">
-              <div class="mockup-window mock-discord">
-                <div class="mock-topbar"><div class="mock-search"></div></div>
-                <div class="mock-body">
-                  <div class="mock-sidebar"><div class="mock-item accent"></div><div class="mock-item"></div><div class="mock-item"></div></div>
-                  <div class="mock-center"><div class="mock-banner"></div><div class="mock-row"></div><div class="mock-row"></div></div>
-                  <div class="mock-right"><div class="mock-cover"></div></div>
-                </div>
-                <div class="mock-bottombar"><div class="mock-controls"></div></div>
-              </div>
-              <span class="theme-card-name">Discord</span>
-            </div>
-
             <div class="theme-card active" data-preset="light-purple-vibrant">
               <div class="mockup-window mock-light-purple-vibrant">
                 <div class="mock-topbar"><div class="mock-search"></div></div>
@@ -1281,34 +1263,6 @@
           <p class="step-header-subtitle">Optional. You can skip this and set it up whenever you like.</p>
         </div>
 
-        <div class="stacked-container stacked-3-middle row">
-          <div class="row-icon">
-            <svg viewBox="0 0 24 24"><path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg>
-          </div>
-          <div class="row-text">
-            <div class="row-title">Discord Rich Presence</div>
-            <div class="row-sub" id="discordSub">Show what you're listening to on your Discord profile</div>
-          </div>
-          <button class="sw" role="switch" aria-checked="false" id="discordSwitch"></button>
-        </div>
-
-        <div class="stacked-container stacked-3-middle">
-          <div class="row">
-            <div class="row-icon">
-              <svg viewBox="0 0 24 24"><path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/></svg>
-            </div>
-            <div class="row-text">
-              <div class="row-title">Import a Spotify playlist</div>
-              <div class="row-sub">Paste a public playlist link and it becomes a Riff playlist</div>
-            </div>
-          </div>
-          <div class="field-row">
-            <input class="field" id="spotifyUrl" type="text" placeholder="https://open.spotify.com/playlist/..." spellcheck="false" autocomplete="off">
-            <button class="btn small primary" id="spotifyImportBtn">Import</button>
-          </div>
-          <div class="status-line" id="spotifyStatus"></div>
-        </div>
-
         <div class="stacked-container stacked-3-bottom">
           <button class="btn secondary" data-nav="back">
             <svg class="arrow-left" viewBox="0 0 24 24">
@@ -1386,32 +1340,6 @@
           } catch (e) {}
         }
         return null;
-      },
-
-      discordSetEnabled(on) {
-        if (this.api && this.api.discordRpcSetEnabled) this.api.discordRpcSetEnabled(on);
-      },
-
-      async discordConnected() {
-        if (this.api && this.api.discordRpcGetConnected) {
-          try {
-            return !!(await this.api.discordRpcGetConnected());
-          } catch (e) {}
-        }
-        return false;
-      },
-
-      async spotifyLookup(url) {
-        const port = await this.serverPort();
-        if (!port) return { success: false, error: 'Riff server is not available here' };
-        try {
-          const res = await fetch(`http://127.0.0.1:${port}/api/spotify-import?url=${encodeURIComponent(url)}`, {
-            headers: { 'X-Riff-Token': this.api?.serverToken || '' }
-          });
-          return await res.json();
-        } catch (e) {
-          return { success: false, error: 'Could not reach the Riff server' };
-        }
       }
     };
 
@@ -1605,16 +1533,6 @@
           '--text-color': '#1d1b20', '--hero-text': '#6750a4', '--btn-bg': '#6750a4',
           '--btn-text': '#ffffff', '--btn-bg-hover': '#755eb1', '--btn-secondary-bg': '#ded5e1',
           '--btn-secondary-hover': '#d5cbd8', '--ripple-color': 'rgba(255, 255, 255, 0.25)'
-        }
-      },
-      'discord': {
-        h: 235, b: 21, s: 7,
-        vars: {
-          '--bg-color': '#313338', '--container-fill': '#2b2d31', '--container-fill-hover': '#35373c',
-          '--card-bg': '#383a40', '--card-bg-hover': '#404249', '--slider-track': '#404249',
-          '--text-color': '#f2f3f5', '--hero-text': '#949cf7', '--btn-bg': '#5865f2',
-          '--btn-text': '#ffffff', '--btn-bg-hover': '#4752c4', '--btn-secondary-bg': '#404249',
-          '--btn-secondary-hover': '#4a4d55', '--ripple-color': 'rgba(255, 255, 255, 0.18)'
         }
       },
       'light-purple-vibrant': {
@@ -1897,29 +1815,6 @@
       bgSub.textContent = bgDisplayName(bgUrl);
     });
 
-    const discordSwitch = document.getElementById('discordSwitch');
-    const discordSub = document.getElementById('discordSub');
-    const DISCORD_HINT = discordSub.textContent;
-    let discordOn = false;
-
-    async function refreshDiscord() {
-      if (!discordOn) {
-        discordSub.textContent = DISCORD_HINT;
-        return;
-      }
-      const connected = await bridge.discordConnected();
-      discordSub.textContent = connected ? 'Connected to Discord' : 'Waiting for Discord to start';
-    }
-
-    discordSwitch.addEventListener('click', () => {
-      discordOn = discordSwitch.classList.toggle('on');
-      discordSwitch.setAttribute('aria-checked', discordOn ? 'true' : 'false');
-      bridge.discordSetEnabled(discordOn);
-      bridge.set('riff_discord_rpc', discordOn ? '1' : '0');
-      refreshDiscord();
-      if (discordOn) setTimeout(refreshDiscord, 1800);
-    });
-
 
     const launcherSwitch = document.getElementById('launcherSwitch');
     const launcherSub = document.getElementById('launcherSub');
@@ -1964,48 +1859,6 @@
 
     initLauncher();
 
-    const spotifyUrl = document.getElementById('spotifyUrl');
-    const spotifyImportBtn = document.getElementById('spotifyImportBtn');
-    const spotifyStatus = document.getElementById('spotifyStatus');
-    let pendingImport = null;
-
-    function isSpotifyPlaylist(url) {
-      return /open\.spotify\.com\/(intl-[a-z]+\/)?playlist\/[A-Za-z0-9]+/.test(url) || /^spotify:playlist:[A-Za-z0-9]+$/.test(url);
-    }
-
-    async function runSpotifyLookup() {
-      const url = spotifyUrl.value.trim();
-      pendingImport = null;
-
-      if (!url) {
-        spotifyStatus.textContent = '';
-        return;
-      }
-      if (!isSpotifyPlaylist(url)) {
-        spotifyStatus.textContent = 'That does not look like a Spotify playlist link';
-        return;
-      }
-
-      spotifyImportBtn.disabled = true;
-      spotifyStatus.textContent = 'Looking up the playlist...';
-
-      const data = await bridge.spotifyLookup(url);
-      spotifyImportBtn.disabled = false;
-
-      if (!data.success || !Array.isArray(data.tracks) || data.tracks.length === 0) {
-        spotifyStatus.textContent = data.error || 'No tracks found in this playlist';
-        return;
-      }
-
-      pendingImport = { url, name: data.name, tracks: data.tracks };
-      spotifyStatus.textContent = `Found ${data.tracks.length} tracks in "${data.name}". They will be added when you finish.`;
-    }
-
-    spotifyImportBtn.addEventListener('click', runSpotifyLookup);
-    spotifyUrl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') runSpotifyLookup();
-    });
-
     const finishBtn = document.getElementById('finishBtn');
     const finishBtnText = document.getElementById('finishBtnText');
     const finishBtnIcon = document.getElementById('finishBtnIcon');
@@ -2015,10 +1868,6 @@
       if (finished) return;
       finished = true;
 
-      if (!pendingImport && spotifyUrl.value.trim() && isSpotifyPlaylist(spotifyUrl.value.trim())) {
-        await runSpotifyLookup();
-      }
-
       finishBtnText.textContent = 'All Set!';
       finishBtnIcon.innerHTML = '<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>';
 
@@ -2026,9 +1875,7 @@
         theme: { ...themeState },
         toggles: { ...toggles },
         background: bgUrl || null,
-        discord: discordOn,
-        launcher: launcherOn && launcherAvailable,
-        spotify: pendingImport
+        launcher: launcherOn && launcherAvailable
       };
 
       bridge.set('riff_welcome_theme', JSON.stringify(detail.theme));

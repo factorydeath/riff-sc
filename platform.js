@@ -169,8 +169,14 @@ function ytDlpCommand(args) {
     throw new Error('yt-dlp not found. Put yt-dlp and ffmpeg into the bin folder next to the app, or add them to PATH.');
   }
   const ffmpeg = resolveBinary('ffmpeg');
-  const extra = ffmpeg && !findInPath('ffmpeg') ? ['--ffmpeg-location', path.dirname(ffmpeg)] : [];
+  const extra = ffmpeg && !pathFfmpegCached() ? ['--ffmpeg-location', path.dirname(ffmpeg)] : [];
   return { bin, args: extra.concat(args) };
+}
+
+let pathFfmpegResult;
+function pathFfmpegCached() {
+  if (pathFfmpegResult === undefined) pathFfmpegResult = findInPath('ffmpeg');
+  return pathFfmpegResult;
 }
 
 function clearBinaryCache() {

@@ -6,7 +6,12 @@ const LOG_DIR = path.join(DATA_DIR, 'logs');
 const LOG_PATH = path.join(LOG_DIR, 'riff.log');
 const MAX_BYTES = 1024 * 1024;
 
+let lastRotateCheck = 0;
+
 function rotate() {
+  const now = Date.now();
+  if (now - lastRotateCheck < 10000) return;
+  lastRotateCheck = now;
   try {
     if (fs.existsSync(LOG_PATH) && fs.statSync(LOG_PATH).size > MAX_BYTES) fs.renameSync(LOG_PATH, `${LOG_PATH}.1`);
   } catch (e) {}

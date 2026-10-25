@@ -19,7 +19,7 @@ function initUpdater(getWindow) {
   if (pkg.version) {
     app.setVersion(pkg.version);
   }
-  const releasesUrl = `${pkg.homepage || 'https://github.com/rootscripts/riff'}/releases`;
+  const releasesUrl = `${pkg.homepage || 'https://github.com/factorydeath/riff-sc'}/releases`;
   let manualCheck = false;
   let installNow = false;
   let current = null;

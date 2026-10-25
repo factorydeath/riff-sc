@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Riff</title>
+  <title>Riff SC</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap"></noscript>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="no-nav-transition">
@@ -42,7 +43,7 @@
     <div class="titlebar-drag">
       <div class="app-logo">
         <span class="logo-dot" id="titlebar-logo-dot"></span>
-        <span class="logo-text">Riff</span>
+        <span class="logo-text">Riff SC</span>
       </div>
     </div>
     <div class="titlebar-controls">
@@ -79,19 +80,7 @@
 
     <div class="platform-switch-container">
       <div class="platform-pill-switch">
-        <button class="platform-btn active" data-platform="youtube" id="platform-yt" title="YouTube">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM10 15V9l5.2 3L10 15z"/>
-          </svg>
-          <span>YouTube</span>
-        </button>
-        <button class="platform-btn" data-platform="ytmusic" id="platform-ytm" title="YouTube Music">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-12.5v9l6-4.5-6-4.5z"/>
-          </svg>
-          <span>YouTube Music</span>
-        </button>
-        <button class="platform-btn" data-platform="soundcloud" id="platform-sc" title="SoundCloud">
+        <button class="platform-btn active" data-platform="soundcloud" id="platform-sc" title="SoundCloud">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M11.5 14.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5v-4c0-.28.22-.5.5-.5s.5.22.5.5v4zm-2 0c0 .28-.22.5-.5.5s-.5-.22-.5-.5v-3c0-.28.22-.5.5-.5s.5.22.5.5v3zm-2 0c0 .28-.22.5-.5.5s-.5-.22-.5-.5v-2c0-.28.22-.5.5-.5s.5.22.5.5v2zm-2 0c0 .28-.22.5-.5.5s-.5-.22-.5-.5v-1c0-.28.22-.5.5-.5s.5.22.5.5v1zm14.5-.5c0 1.93-1.57 3.5-3.5 3.5H13V9.1c.7-.6 1.6-1.1 2.6-1.1 2.2 0 4.1 1.6 4.4 3.8.3-.2.7-.3 1-.3 1.4 0 2.5 1.1 2.5 2.5z"/>
           </svg>
@@ -349,6 +338,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </button>
         <div class="playlist-detail-header">
+          <div class="playlist-header-banner" id="playlist-header-banner"><div class="banner-image"></div></div>
           <div class="hero-fx" id="playlist-hero-fx"></div>
           <div class="playlist-cover-wrapper" id="playlist-detail-cover"></div>
           <div class="playlist-meta">
@@ -505,6 +495,13 @@
                 </svg>
                 <span>Integrations</span>
               </button>
+              <button class="settings-nav-btn" data-cat="account">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M4 21c0-4.2 3.6-6.5 8-6.5s8 2.3 8 6.5"/>
+                </svg>
+                <span>Account</span>
+              </button>
               <button class="settings-nav-btn" data-cat="storage">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="22" x2="2" y1="12" y2="12"/>
@@ -600,33 +597,11 @@
               </div>
             </div>
 
-            <div class="setting-item" id="setting-engine-api-row">
-              <div class="setting-item-top">
-                <span class="setting-name">Search engine</span>
-              </div>
-              <select class="pill-select" id="select-engine-api" style="display:none">
-                <option value="youtube" selected>YouTube</option>
-                <option value="ytmusic">YouTube Music</option>
-                <option value="soundcloud">SoundCloud</option>
-              </select>
-              <div class="m3-dropdown" id="engine-api-dropdown">
-                <button class="m3-dropdown-trigger" id="engine-api-trigger" type="button">
-                  <span id="engine-api-label">YouTube</span>
-                  <svg class="m3-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </button>
-                <div class="m3-dropdown-menu" id="engine-api-menu">
-                  <button class="m3-dropdown-option selected" data-value="youtube" type="button">YouTube</button>
-                  <button class="m3-dropdown-option" data-value="ytmusic" type="button">YouTube Music</button>
-                  <button class="m3-dropdown-option" data-value="soundcloud" type="button">SoundCloud</button>
-                </div>
-              </div>
-            </div>
-
             <div class="setting-item">
               <div class="setting-item-top" style="align-items: center;">
                 <div style="display: flex; flex-direction: column; gap: 2px;">
                   <span class="setting-name">Compact engine buttons</span>
-                  <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Show only icons for YouTube, YouTube Music, and SoundCloud in the top bar</span>
+                  <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Show only icons for SoundCloud in the top bar</span>
                 </div>
                 <button class="effect-switch-btn" id="btn-compact-engine-btns"><span class="thumb"></span></button>
               </div>
@@ -1202,58 +1177,6 @@
             <span class="settings-section-title">Integrations</span>
 
             <div class="m3-group">
-            <div class="setting-item" id="card-discord-rpc">
-              <div class="setting-item-top" style="align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="currentColor" style="color: #5865F2;">
-                    <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.1,46,96,53,91.08,65.69,84.69,65.69Z"/>
-                  </svg>
-                  <span class="setting-name">Discord Rich Presence</span>
-                </div>
-                <button class="effect-switch-btn active" id="btn-discord-rpc"><span class="thumb"></span></button>
-              </div>
-            </div>
-
-            <div class="setting-item" id="card-spotify-import">
-              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--md-sys-color-on-surface-variant);">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M7 9.5c3.5-1 7.5-.7 10.5 1"/><path d="M7.5 12.7c3-.8 6-.5 8.5.9"/><path d="M8 15.8c2.5-.6 4.5-.4 6.5.7"/></svg>
-                  </span>
-                  <span class="setting-name">Spotify</span>
-                </div>
-                <button class="btn-pill-primary" id="btn-open-spotify-import" type="button">Import</button>
-              </div>
-            </div>
-
-            <div class="setting-item" id="card-yt-import">
-              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--md-sys-color-on-surface-variant);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                    </svg>
-                  </span>
-                  <span class="setting-name">YouTube</span>
-                </div>
-                <button class="btn-pill-primary btn-open-link-import" id="btn-open-link-import" data-platform="youtube" type="button">Import</button>
-              </div>
-            </div>
-
-            <div class="setting-item" id="card-ytm-import">
-              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--md-sys-color-on-surface-variant);">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm0 19.104c-3.924 0-7.104-3.18-7.104-7.104S8.076 4.896 12 4.896s7.104 3.18 7.104 7.104-3.18 7.104-7.104 7.104zm0-13.333c-3.44 0-6.229 2.789-6.229 6.229s2.789 6.229 6.229 6.229 6.229-2.789 6.229-6.229-2.789-6.229-6.229-6.229zm-1.75 9.138V9.091l5.426 3.092-5.426 3.092z"/>
-                    </svg>
-                  </span>
-                  <span class="setting-name">YouTube Music</span>
-                </div>
-                <button class="btn-pill-primary btn-open-link-import" id="btn-open-ytm-import" data-platform="ytmusic" type="button">Import</button>
-              </div>
-            </div>
-
             <div class="setting-item" id="card-sc-import">
               <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -1267,21 +1190,79 @@
                 <button class="btn-pill-primary btn-open-link-import" id="btn-open-sc-import" data-platform="soundcloud" type="button">Import</button>
               </div>
             </div>
+            </div>
+          </div>
 
-            <div class="setting-item" id="card-apple-import">
+
+          <div class="settings-section" data-cat="account">
+            <span class="settings-section-title">SoundCloud account</span>
+
+            <div class="m3-group">
+            <div class="setting-item" id="sc-account-item">
               <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <span style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--md-sys-color-on-surface-variant);">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                    </svg>
-                  </span>
-                  <span class="setting-name">Apple Music</span>
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                  <div id="sc-account-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); overflow: hidden; flex-shrink: 0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-6.5 8-6.5s8 2.3 8 6.5"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column; min-width: 0;">
+                    <span class="setting-name" id="sc-account-name">Not connected</span>
+                    <span id="sc-account-sub" style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline); word-break: break-all;">Sign in to import your likes and playlists</span>
+                  </div>
                 </div>
-                <button class="btn-pill-primary" id="btn-open-apple-import" type="button">Import</button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                  <button class="btn-pill-primary" id="btn-sc-login" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1));">Sign in</button>
+                  <button class="btn-outline-pill hidden" id="btn-sc-logout" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1));">Log out</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item hidden" id="sc-import-likes-item">
+              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="setting-name">Liked tracks</span>
+                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Adds all your SoundCloud likes to Favorites</span>
+                  </div>
+                </div>
+                <button class="btn-pill-primary" id="btn-sc-import-likes" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import</button>
+              </div>
+            </div>
+
+            <div class="setting-item hidden" id="sc-import-playlists-item">
+              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="3" y1="17" x2="10" y2="17"/><line x1="3" y1="21" x2="8" y2="21"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="setting-name">Your playlists</span>
+                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Copies your SoundCloud playlists into Riff</span>
+                  </div>
+                </div>
+                <button class="btn-pill-primary" id="btn-sc-import-playlists" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import all</button>
+              </div>
+            </div>
+
+            <div class="setting-item hidden" id="sc-import-liked-playlists-item">
+              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="setting-name">Liked playlists</span>
+                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Imports playlists you liked on SoundCloud</span>
+                  </div>
+                </div>
+                <button class="btn-pill-primary" id="btn-sc-import-liked-playlists" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import all</button>
               </div>
             </div>
             </div>
+
+            <div id="sc-playlists-progress" class="hidden" style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline); margin-top: 10px;"></div>
           </div>
 
 
@@ -1602,12 +1583,9 @@
 
           <div class="settings-credits">
             <span class="settings-credits-text">
-              <svg class="settings-credits-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .4z"/>
-              </svg>
-              Riff made by rootless, support me: <a href="https://t.me/riffplayer" target="_blank" rel="noopener">t.me/riffplayer</a>
+              Riff SC — dedicated SoundCloud client
             </span>
-            <span class="settings-version-tag">v42.3.0</span>
+            <span class="settings-version-tag">v42.3.1</span>
           </div>
             </div>
           </div>
@@ -1650,6 +1628,7 @@
 
       <div class="lyrics-section">
         <div class="lyrics-header">
+          <span class="lyrics-status hidden" id="lyrics-status"></span>
           <div class="lyrics-header-actions">
             <button class="lyrics-action-btn" id="btn-add-custom-lyrics" title="Edit lyrics" aria-label="Edit lyrics">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
@@ -1680,7 +1659,7 @@
           <canvas class="m3c-canvas" id="m3c-canvas"></canvas>
         </div>
         <div class="artwork-fallback" id="artwork-fallback">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
         </div>
       </div>
       <div class="track-meta">
@@ -1689,15 +1668,17 @@
         </div>
         <span class="track-artist" id="playbar-artist">Select a track to listen</span>
       </div>
-      <button class="btn-icon-pill" id="btn-toggle-fav" title="Favorite">
-        <svg id="fav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-      </button>
-      <button class="btn-icon-pill" id="btn-edit-current-track" title="Edit track title and artist">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      </button>
-      <button class="btn-icon-pill" id="btn-playbar-more" title="Download track">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
-      </button>
+      <div class="track-actions">
+        <button class="btn-icon-pill playbar-action-btn" id="btn-toggle-fav" title="Favorite">
+          <svg id="fav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+        </button>
+        <button class="btn-icon-pill playbar-action-btn secondary-action" id="btn-edit-current-track" title="Edit track title and artist">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+        <button class="btn-icon-pill playbar-action-btn secondary-action" id="btn-playbar-more" title="Download track">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="playbar-center">
@@ -1732,18 +1713,22 @@
     </div>
 
     <div class="playbar-right">
-      <div class="visualizer-container" id="visualizer-container" title="Visualizer">
-        <canvas id="visualizer-canvas" width="60" height="24"></canvas>
+      <div class="playbar-tools">
+        <div class="visualizer-container" id="visualizer-container" title="Visualizer">
+          <canvas id="visualizer-canvas" width="60" height="24"></canvas>
+        </div>
+
+        <button class="btn-icon-pill" id="btn-toggle-lyrics-panel" title="Toggle lyrics">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        </button>
+
+        <button class="btn-icon-pill" id="btn-open-settings" title="Audio">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+          <span class="settings-dot hidden" id="settings-modified-dot"></span>
+        </button>
       </div>
 
-      <button class="btn-icon-pill" id="btn-toggle-lyrics-panel" title="Toggle lyrics">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-      </button>
-
-      <button class="btn-icon-pill" id="btn-open-settings" title="Audio">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-        <span class="settings-dot hidden" id="settings-modified-dot"></span>
-      </button>
+      <div class="playbar-divider" aria-hidden="true"></div>
 
       <div class="volume-control-group">
         <button class="btn-icon-pill" id="btn-volume-mute" title="Mute or unmute">
@@ -1765,6 +1750,10 @@
         <circle class="m3-spinner-track" cx="24" cy="24" r="18" fill="none" stroke-width="4"></circle>
         <circle class="m3-spinner-head" cx="24" cy="24" r="18" fill="none" stroke-width="4"></circle>
       </svg>
+    </div>
+    <div class="track-loading-text">
+      <h4 id="track-loading-title"></h4>
+      <span id="track-loading-sub"></span>
     </div>
   </div>
 
@@ -2219,178 +2208,6 @@
     </div>
   </div>
 
-  <div class="modal-backdrop hidden" id="spotify-import-modal">
-    <div class="dialog-card">
-      <h3>Import from Spotify</h3>
-      <div class="sp-modes" id="sp-modes">
-        <button type="button" class="active" data-mode="link">Playlist link</button>
-        <button type="button" data-mode="file">Export files</button>
-        <button type="button" data-mode="login">Log in</button>
-      </div>
-      <div class="sp-pane" data-mode="link">
-        <div style="position: relative; width: 100%; margin-bottom: 12px;">
-          <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; color: var(--md-sys-color-on-surface-variant); pointer-events: none;">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
-          </span>
-          <input type="text" id="spotify-import-url" class="pill-text-input" placeholder="URL" style="width: 100%; box-sizing: border-box; padding-left: 40px;">
-        </div>
-        <div id="spotify-link-error" class="import-error-block hidden"></div>
-        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
-          <label class="dialog-label">Import into</label>
-          <select class="pill-select" id="spotify-import-target" style="display:none">
-            <option value="new">New playlist (Spotify name)</option>
-          </select>
-          <div class="m3-dropdown" id="spotify-target-dropdown">
-            <button class="m3-dropdown-trigger" id="spotify-target-trigger" type="button">
-              <span id="spotify-target-label">New playlist (Spotify name)</span>
-              <svg class="m3-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </button>
-            <div class="m3-dropdown-menu" id="spotify-target-menu">
-              <button class="m3-dropdown-option selected" data-value="new" type="button">New playlist (Spotify name)</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="sp-pane hidden" data-mode="file">
-        <div style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-on-surface-variant); margin-bottom: 12px; line-height: 1.4;">Spotify → Account → Privacy → Download your data. When the archive arrives, pick Playlist1.json and YourLibrary.json here. No login needed.</div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-          <button type="button" class="btn-outline-pill" id="btn-sp-pick-files">Choose files</button>
-          <input type="file" id="sp-file-input" accept=".json,application/json" multiple style="display: none;">
-          <span id="sp-file-info" style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">No files selected</span>
-        </div>
-        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-          <label style="display: flex; align-items: center; gap: 8px; font-size: calc(13px * var(--font-scale, 1)); cursor: pointer;">
-            <input type="checkbox" id="sp-chk-likes" class="m3-checkbox" checked> Liked songs
-          </label>
-          <label style="display: flex; align-items: center; gap: 8px; font-size: calc(13px * var(--font-scale, 1)); cursor: pointer;">
-            <input type="checkbox" id="sp-chk-playlists" class="m3-checkbox" checked> Playlists
-          </label>
-        </div>
-        <div class="sp-warning">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span>We don't steal anything, and Riff is open-source. Want to import everything? Use the export files (or log in, if you set that up). Want zero risk? Import a single playlist by link instead.</span>
-        </div>
-      </div>
-      <div class="sp-pane hidden" data-mode="login">
-        <div style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-on-surface-variant); margin-bottom: 12px; line-height: 1.4;">1) Open developer.spotify.com/dashboard and create an app. 2) Add this exact Redirect URI: <code id="sp-redirect-uri" style="user-select: all; background: var(--md-sys-color-surface-container, rgba(255,255,255,0.06)); padding: 2px 6px; border-radius: 4px; font-family: monospace;"></code> (use 127.0.0.1, not localhost). 3) Paste the Client ID here. The app owner needs Premium; add other accounts under User Management. If Spotify refuses a new app, use Export files instead.</div>
-        <div style="position: relative; width: 100%; margin-bottom: 12px;">
-          <input type="text" id="sp-client-id" class="pill-text-input" placeholder="Client ID" style="width: 100%; box-sizing: border-box;">
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-          <button type="button" class="btn-outline-pill" id="btn-sp-login" disabled>Log in with Spotify</button>
-          <span id="sp-login-status" style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Not connected</span>
-        </div>
-        <div style="display: flex; gap: 16px; margin-bottom: 12px;">
-          <label style="display: flex; align-items: center; gap: 8px; font-size: calc(13px * var(--font-scale, 1)); cursor: pointer;">
-            <input type="checkbox" id="sp-chk-likes-2" class="m3-checkbox" checked> Liked songs
-          </label>
-          <label style="display: flex; align-items: center; gap: 8px; font-size: calc(13px * var(--font-scale, 1)); cursor: pointer;">
-            <input type="checkbox" id="sp-chk-playlists-2" class="m3-checkbox" checked> Playlists
-          </label>
-        </div>
-        <div class="sp-warning">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span>We don't steal anything, and Riff is open-source. Want to import everything? Use the export files (or log in, if you set that up). Want zero risk? Import a single playlist by link instead.</span>
-        </div>
-      </div>
-      <div id="spotify-import-progress-wrap" class="hidden" style="margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-        <div id="spotify-import-wavy-container" style="width: 100%;"></div>
-        <span id="spotify-import-progress-label" style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-on-surface-variant);">0 / 0</span>
-      </div>
-      <div id="spotify-import-status" class="hidden" style="margin-bottom: 16px; font-size: calc(13px * var(--font-scale, 1));"></div>
-      <div class="dialog-actions">
-        <button class="btn-outline-pill" id="btn-cancel-spotify-import" type="button">Cancel</button>
-        <button class="btn-pill-primary" id="btn-confirm-spotify-import" type="button" style="display: flex; align-items: center; gap: 8px;">
-          <span id="spotify-import-btn-icon" style="display: flex; align-items: center;">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M7 9.5c3.5-1 7.5-.7 10.5 1"/><path d="M7.5 12.7c3-.8 6-.5 8.5.9"/><path d="M8 15.8c2.5-.6 4.5-.4 6.5.7"/></svg>
-          </span>
-          <span id="spotify-import-btn-text">Import from Spotify</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-backdrop hidden" id="apple-import-modal">
-    <div class="dialog-card">
-      <h3>Import from Apple Music</h3>
-      <div class="sp-modes" id="apple-modes">
-        <button type="button" class="active" data-mode="link">Playlist link</button>
-        <button type="button" data-mode="file">Export files</button>
-      </div>
-      <div class="sp-pane" data-mode="link">
-        <div style="position: relative; width: 100%; margin-bottom: 12px;">
-          <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; color: var(--md-sys-color-on-surface-variant); pointer-events: none;">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
-          </span>
-          <input type="text" id="apple-import-url" class="pill-text-input" placeholder="Paste an Apple Music playlist link" style="width: 100%; box-sizing: border-box; padding-left: 40px;">
-        </div>
-        <div id="apple-link-error" class="import-error-block hidden"></div>
-        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
-          <label class="dialog-label">Import into</label>
-          <select class="pill-select" id="apple-import-target" style="display:none">
-            <option value="new">New playlist (Apple Music name)</option>
-          </select>
-          <div class="m3-dropdown" id="apple-target-dropdown">
-            <button class="m3-dropdown-trigger" id="apple-target-trigger" type="button">
-              <span id="apple-target-label">New playlist (Apple Music name)</span>
-              <svg class="m3-dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </button>
-            <div class="m3-dropdown-menu" id="apple-target-menu">
-              <button class="m3-dropdown-option selected" data-value="new" type="button">New playlist (Apple Music name)</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="sp-pane hidden" data-mode="file">
-        <div style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-on-surface-variant); margin-bottom: 12px; line-height: 1.4;">Go to privacy.apple.com &gt; Request a copy of your data &gt; Apple Music activity, unzip the archive, then pick the playlist/library files here. No login needed.</div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-          <button type="button" class="btn-outline-pill" id="btn-apple-pick-files">Choose files</button>
-          <input type="file" id="apple-file-input" accept=".csv,.json,text/csv,application/json" multiple style="display: none;">
-          <span id="apple-file-info" style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">No files selected</span>
-        </div>
-        <div id="apple-chk-container" class="hidden" style="display: flex; gap: 16px; margin-bottom: 12px;">
-          <label style="display: flex; align-items: center; gap: 8px; font-size: calc(13px * var(--font-scale, 1)); cursor: pointer;">
-            <input type="checkbox" id="apple-chk-likes" class="m3-checkbox" checked> Liked songs
-          </label>
-          <label style="display: flex; align-items: center; gap: 8px; font-size: calc(13px * var(--font-scale, 1)); cursor: pointer;">
-            <input type="checkbox" id="apple-chk-playlists" class="m3-checkbox" checked> Playlists
-          </label>
-        </div>
-        <div id="apple-file-summary" class="hidden" style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-on-surface-variant); margin-bottom: 12px;"></div>
-        <div class="sp-warning">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span>We don't steal anything, and Riff is open-source. Want to import everything? Use the export files. Want zero risk? Import a single playlist by link instead.</span>
-        </div>
-      </div>
-      <div id="apple-import-progress-wrap" class="hidden" style="margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-        <div id="apple-import-wavy-container" style="width: 100%;"></div>
-        <span id="apple-import-progress-label" style="font-size: calc(13px * var(--font-scale, 1)); color: var(--md-sys-color-on-surface-variant);">0 / 0</span>
-      </div>
-      <div id="apple-import-status" class="hidden" style="margin-bottom: 16px; font-size: calc(13px * var(--font-scale, 1));"></div>
-      <div class="dialog-actions">
-        <button class="btn-outline-pill" id="btn-cancel-apple-import" type="button">Cancel</button>
-        <button class="btn-pill-primary" id="btn-confirm-apple-import" type="button" style="display: flex; align-items: center; gap: 8px;">
-          <span id="apple-import-btn-icon" style="display: flex; align-items: center;">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-          </span>
-          <span id="apple-import-btn-text">Import from Apple Music</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <div class="modal-backdrop hidden" id="link-import-modal">
     <div class="dialog-card">
       <h3>Import from link</h3>
@@ -2398,7 +2215,7 @@
         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; color: var(--md-sys-color-on-surface-variant); pointer-events: none;">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
         </span>
-        <input type="text" id="link-import-url" class="pill-text-input" placeholder="Paste a YouTube, YouTube Music or SoundCloud link" style="width: 100%; box-sizing: border-box; padding-left: 40px;">
+        <input type="text" id="link-import-url" class="pill-text-input" placeholder="Paste a SoundCloud playlist or track link" style="width: 100%; box-sizing: border-box; padding-left: 40px;">
       </div>
       <div id="link-import-error" class="import-error-block hidden"></div>
       <div id="link-import-status" class="hidden" style="margin-bottom: 16px; font-size: calc(13px * var(--font-scale, 1));"></div>
@@ -2883,7 +2700,6 @@
     <button type="button" class="btn-pill-primary" id="multi-select-done">Done</button>
   </div>
 
-  <script src="assets/hls.min.js"></script>
   <script src="audio-engine.js"></script>
   <script src="m3shapes.js"></script>
   <script src="lyrics-rtl.js"></script>

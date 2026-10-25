@@ -1,8 +1,9 @@
 {
-  "name": "riff",
-  "version": "42.3.0",
+  "name": "riff-sc",
+  "version": "42.3.1",
   "main": "main.js",
   "bin": {
+    "riff-sc": "./cli.js",
     "riff": "./cli.js"
   },
   "scripts": {
@@ -13,33 +14,39 @@
     "release:minor": "npm version minor && git push --follow-tags",
     "release:major": "npm version major && git push --follow-tags"
   },
-  "keywords": [],
-  "author": "rootscripts",
+  "keywords": [
+    "soundcloud",
+    "soundcloud-client",
+    "music-player",
+    "material-design-3",
+    "audio-player",
+    "electron"
+  ],
+  "author": "factorydeath",
   "license": "MIT",
-  "description": "made for humans, Riff - audio player.",
+  "description": "Riff SC - dedicated desktop SoundCloud client and audio suite with Material Design 3.",
   "devDependencies": {
     "electron": "^41.7.1",
     "electron-builder": "^26.15.3"
   },
   "dependencies": {
     "cfonts": "^3.3.1",
-    "discord-rpc": "^4.0.1",
     "electron-updater": "^6.8.9",
     "hls.js": "^1.7.1",
     "tone": "^15.1.22"
   },
-  "productName": "Riff",
-  "homepage": "https://github.com/rootscripts/riff",
+  "productName": "Riff SC",
+  "homepage": "https://github.com/factorydeath/riff-sc",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rootscripts/riff.git"
+    "url": "git+https://github.com/factorydeath/riff-sc.git"
   },
   "bugs": {
-    "url": "https://github.com/rootscripts/riff/issues"
+    "url": "https://github.com/factorydeath/riff-sc/issues"
   },
   "build": {
-    "appId": "io.github.rootscripts.riff",
-    "productName": "Riff",
+    "appId": "io.github.factorydeath.riff-sc",
+    "productName": "Riff SC",
     "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
@@ -108,9 +115,23 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "rootscripts",
-        "repo": "riff",
+        "owner": "factorydeath",
+        "repo": "riff-sc",
         "releaseType": "release"
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "bin",
+        "to": "bin",
+        "filter": [
+          "yt-dlp.exe",
+          "ffmpeg.exe",
+          "ffprobe.exe",
+          "yt-dlp",
+          "ffmpeg",
+          "ffprobe"
+        ]
       }
     ]
   }
