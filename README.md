@@ -3,11 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/windows8/windows8-original.svg" width="22" height="22" alt="Windows">&nbsp;&nbsp;
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apple/apple-original.svg" width="22" height="22" alt="macOS">&nbsp;&nbsp;
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg" width="22" height="22" alt="Linux">&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/ios/9ca3af" width="22" height="22" alt="iOS">&nbsp;&nbsp;
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/android/android-original.svg" width="22" height="22" alt="Android">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/windows8/windows8-original.svg" width="20" height="20" align="absmiddle" alt="Windows">&nbsp;<b>Windows 10 / 11 (64-bit)</b>
 </p>
 
 <h1 align="center">
@@ -54,7 +50,7 @@
 
 ## What is Riff SC?
 
-**Riff SC** is an open-source, telemetry-free desktop application for **Windows, Linux, and macOS**. It delivers ad-free **SoundCloud** streaming and offline local media playback in a unified, hardware-accelerated interface without subscription paywalls or tracking.
+**Riff SC** is an open-source, telemetry-free desktop application for **Windows 10/11** (with cross-platform build support from source). It delivers ad-free **SoundCloud** streaming and offline local media playback in a unified, hardware-accelerated interface without subscription paywalls or tracking.
 
 Built with **Electron**, **Vanilla JavaScript**, and **WebGL**, Riff SC provides instant responsiveness, silky animations, and low-latency audio processing without runtime framework overhead. All playback caches, configuration, and history remain strictly on your local machine under the **MIT license**.
 
@@ -115,20 +111,11 @@ Riff SC implements the modern Material Design 3 (M3 Expressive) design language:
 
 Pre-built binaries are available on the [Releases page](https://github.com/factorydeath/riff-sc/releases).
 
-Standard releases bundle all necessary runtime dependencies (`yt-dlp` and `ffmpeg` binaries). No extra configuration is required on Windows or Linux.
+Standard releases bundle all necessary runtime dependencies (`yt-dlp` and `ffmpeg` binaries) — no extra configuration or secondary installation required.
 
-### Windows
-1. Download `riff-sc-<version>-win-x64.exe` from [Releases](https://github.com/factorydeath/riff-sc/releases).
-2. Run the installer.
-
-### Linux
-1. Download `riff-sc-<version>-x86_64.AppImage`.
-2. Make it executable (`chmod +x riff-sc-*.AppImage`) and run.
-
-### macOS
-1. Download `Riff-SC-<version>-mac-arm64.dmg` (Apple Silicon) or `Riff-SC-<version>-mac-x64.dmg` (Intel).
-2. Drag Riff SC to your `Applications` directory.
-3. If macOS prompts an unidentified developer warning, right-click `Riff SC.app` and choose **Open**.
+### Windows (64-bit)
+1. Download **`riff-sc-42.3.1-win-x64.exe`** from [Releases](https://github.com/factorydeath/riff-sc/releases).
+2. Run the installer and launch **Riff SC**.
 
 ---
 
@@ -168,7 +155,7 @@ No. Streams from SoundCloud are resolved directly and play without third-party a
 No account is required to search and listen. You can also sign in to SoundCloud if you wish to sync your personal likes and playlists.
 
 **Which operating systems are supported?**  
-Windows 10/11, modern Linux distributions, and macOS.
+Official binary releases are packaged for Windows 10/11 (64-bit). Linux and macOS can be built from source using Node.js.
 
 **Can Riff SC function as an offline local music player?**  
 Yes. Riff SC natively indexes local audio files (including lossless FLAC, WAV, MP3, and OGG), reads standard metadata tags and embedded artwork, and manages playlists without altering underlying disk files.
