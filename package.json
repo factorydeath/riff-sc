@@ -1,6 +1,6 @@
 {
   "name": "riff-sc",
-  "version": "42.3.8",
+  "version": "42.3.9",
   "main": "main.js",
   "bin": {
     "riff-sc": "./cli.js",

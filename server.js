@@ -749,23 +749,87 @@ async function dzRadioTracks(artist) {
   }
 }
 
-async function gatherCandidates(seeds) {
-  const seedList = (Array.isArray(seeds) ? seeds : []).slice(0, 4);
+async function gatherCandidates(seeds, profile = null) {
+  const seedList = (Array.isArray(seeds) ? seeds : []).slice(0, 6);
   const perSeed = await Promise.all(seedList.map(async (seed) => {
     const weight = Number(seed?.weight) || 1;
-    const [dzRel, dzRad] = await Promise.all([
-      dzRelatedTracks(seed?.artist).catch(() => []),
-      dzRadioTracks(seed?.artist).catch(() => [])
-    ]);
     const list = [];
-    (dzRel || []).forEach(t => {
-      list.push({ ...t, seedWeight: weight });
-    });
-    (dzRad || []).forEach(t => {
-      list.push({ ...t, seedWeight: weight });
-    });
+    const seenLocalIds = new Set();
+
+    // 1. Primary & Most Accurate: SoundCloud Native Related Tracks
+    let scRelated = [];
+    const directScId = seed?.id && /^\d+$/.test(String(seed.id)) ? String(seed.id) : null;
+    if (directScId) {
+      try {
+        scRelated = await soundcloudApiRelated(directScId, 30);
+      } catch (_) {}
+    }
+
+    // If no direct numeric SC ID or fewer than 5 tracks, search SoundCloud for track and get its related
+    if (scRelated.length < 5 && (seed?.artist || seed?.title)) {
+      try {
+        const query = `${seed.artist || ''} ${seed.title || ''}`.trim();
+        const scSearch = await soundcloudApiSearch(query, 3);
+        if (Array.isArray(scSearch) && scSearch.length > 0) {
+          const topId = scSearch[0].id;
+          if (topId && topId !== directScId) {
+            const extraRel = await soundcloudApiRelated(topId, 25);
+            scRelated.push(...extraRel);
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (scRelated.length > 0) {
+      scRelated.forEach((t, idx) => {
+        if (!t || !t.id || seenLocalIds.has(t.id)) return;
+        seenLocalIds.add(t.id);
+        const matchScore = Math.max(0.55, 1.0 - (idx / scRelated.length) * 0.45);
+        list.push({
+          ...t,
+          playable: true,
+          match: matchScore,
+          source: 'soundcloud_related',
+          seedWeight: weight
+        });
+      });
+    }
+
+    // 2. Artist catalog discovery on SoundCloud
+    if (seed?.artist) {
+      try {
+        const artistTracks = await soundcloudApiSearch(seed.artist, 6);
+        if (Array.isArray(artistTracks)) {
+          artistTracks.forEach(t => {
+            if (!t || !t.id || seenLocalIds.has(t.id)) return;
+            seenLocalIds.add(t.id);
+            list.push({
+              ...t,
+              playable: true,
+              match: 0.65,
+              source: 'soundcloud_artist',
+              seedWeight: weight * 0.9
+            });
+          });
+        }
+      } catch (_) {}
+    }
+
+    // 3. Complementary Deezer Related & Radio
+    if (seed?.artist) {
+      try {
+        const [dzRel, dzRad] = await Promise.all([
+          dzRelatedTracks(seed.artist).catch(() => []),
+          dzRadioTracks(seed.artist).catch(() => [])
+        ]);
+        (dzRel || []).forEach(t => list.push({ ...t, seedWeight: weight * 0.85 }));
+        (dzRad || []).forEach(t => list.push({ ...t, seedWeight: weight * 0.8 }));
+      } catch (_) {}
+    }
+
     return list;
   }));
+
   return perSeed.flat();
 }
 
@@ -914,22 +978,34 @@ async function resolveCandidate(c) {
   return lookupPromise;
 }
 
-function pickWeightedSeeds(seeds, count = 4) {
+function pickWeightedSeeds(seeds, count = 5) {
   const pool = [...seeds];
   const picked = [];
+  const pickedArtists = new Set();
+
   while (picked.length < count && pool.length > 0) {
-    const totalWeight = pool.reduce((acc, s) => acc + (Number(s.weight) || 1), 0);
+    // Prefer unrepresented artists to ensure maximum diversity across genres
+    const hasUnpicked = pool.some(s => s.artist && !pickedArtists.has(normalizeArtistName(s.artist)));
+    const eligiblePool = hasUnpicked
+      ? pool.filter(s => s.artist && !pickedArtists.has(normalizeArtistName(s.artist)))
+      : pool;
+
+    const totalWeight = eligiblePool.reduce((acc, s) => acc + (Number(s.weight) || 1), 0);
     let r = Math.random() * totalWeight;
-    let selectedIdx = 0;
-    for (let i = 0; i < pool.length; i++) {
-      r -= (Number(pool[i].weight) || 1);
+    let selectedItem = eligiblePool[0];
+    for (let i = 0; i < eligiblePool.length; i++) {
+      r -= (Number(eligiblePool[i].weight) || 1);
       if (r <= 0) {
-        selectedIdx = i;
+        selectedItem = eligiblePool[i];
         break;
       }
     }
-    picked.push(pool[selectedIdx]);
-    pool.splice(selectedIdx, 1);
+    picked.push(selectedItem);
+    if (selectedItem && selectedItem.artist) {
+      pickedArtists.add(normalizeArtistName(selectedItem.artist));
+    }
+    const poolIdx = pool.indexOf(selectedItem);
+    if (poolIdx !== -1) pool.splice(poolIdx, 1);
   }
   return picked;
 }
@@ -972,7 +1048,7 @@ async function recommendVibeTracks(historyTracks, favoriteTracks, platform = 'so
     trackCount: totalUserTracks
   };
 
-  if (totalUserTracks < 5 && !hasExtraSeeds) {
+  if (totalUserTracks < 1 && !hasExtraSeeds) {
     return {
       profile,
       tracks: []
@@ -1005,7 +1081,7 @@ async function recommendVibeTracks(historyTracks, favoriteTracks, platform = 'so
     candidateSeeds = Array.from(seedMap.values()).slice(0, 8);
   }
 
-  const chosenSeeds = pickWeightedSeeds(candidateSeeds, 4);
+  const chosenSeeds = pickWeightedSeeds(candidateSeeds, 5);
 
   const avoidKeys = new Set(Array.isArray(extra?.avoid?.keys) ? extra.avoid.keys : []);
   const avoidArtists = new Set(
@@ -1062,11 +1138,11 @@ async function recommendVibeTracks(historyTracks, favoriteTracks, platform = 'so
       recentlyRecommendedTrackIds.add(track.id);
       const nKey = getTrackNormalizedKey(track.artist, track.title);
       if (nKey) recentlyRecommendedKeys.add(nKey);
-      if (recentlyRecommendedTrackIds.size > 100) {
+      if (recentlyRecommendedTrackIds.size > 800) {
         const first = recentlyRecommendedTrackIds.values().next().value;
         recentlyRecommendedTrackIds.delete(first);
       }
-      if (recentlyRecommendedKeys.size > 100) {
+      if (recentlyRecommendedKeys.size > 800) {
         const firstK = recentlyRecommendedKeys.values().next().value;
         recentlyRecommendedKeys.delete(firstK);
       }

@@ -5195,7 +5195,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (state.myWaveActive && typeof extendMyWaveQueue === 'function') {
         extendMyWaveQueue().then(added => {
           if (added && state.queueIndex + 1 < state.queue.length) {
-            playNext();
+            state.queueIndex++;
+            recordPlayedIndex(state.queueIndex);
+            playTrack(state.queue[state.queueIndex]);
+          } else {
+            showToast('My Wave is tuning more tracks...');
+            loadHomePage(true).then(() => {
+              if (myWaveCurrentTracks && myWaveCurrentTracks.length > 0) {
+                state.queue.push(...myWaveCurrentTracks);
+                updateQueueBadge();
+                renderQueueView();
+                playNext();
+              }
+            });
           }
         });
         return;
@@ -5206,7 +5218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     recordPlayedIndex(nextIdx);
     playTrack(state.queue[nextIdx]);
 
-    if (state.myWaveActive && state.queueIndex >= state.queue.length - 3 && typeof extendMyWaveQueue === 'function') {
+    if (state.myWaveActive && state.queueIndex >= state.queue.length - 5 && typeof extendMyWaveQueue === 'function') {
       extendMyWaveQueue();
     }
   }
@@ -12767,17 +12779,40 @@ document.addEventListener('DOMContentLoaded', async () => {
       .sort((a, b) => b[1] - a[1])
       .map(([normArtist]) => artistDisplayNames[normArtist]);
 
-    const seeds = Array.from(mergedMap.values())
+    const candidateList = Array.from(mergedMap.values())
       .filter(s => s.artist && s.title && s.artist.trim() && s.title.trim())
-      .sort((a, b) => b.weight - a.weight)
-      .slice(0, 8)
-      .map(s => ({
-        artist: s.artist,
-        title: s.title,
-        id: s.id,
-        platform: s.platform || 'soundcloud',
-        weight: Math.round(s.weight * 1000) / 1000
-      }));
+      .sort((a, b) => b.weight - a.weight);
+
+    const seeds = [];
+    const seedArtistCounts = {};
+    for (const s of candidateList) {
+      const a = normalizeArtistName(s.artist);
+      if ((seedArtistCounts[a] || 0) < 2) {
+        seedArtistCounts[a] = (seedArtistCounts[a] || 0) + 1;
+        seeds.push({
+          artist: s.artist,
+          title: s.title,
+          id: s.id,
+          platform: s.platform || 'soundcloud',
+          weight: Math.round(s.weight * 1000) / 1000
+        });
+        if (seeds.length >= 8) break;
+      }
+    }
+    if (seeds.length < 8) {
+      for (const s of candidateList) {
+        if (!seeds.some(x => x.id === s.id)) {
+          seeds.push({
+            artist: s.artist,
+            title: s.title,
+            id: s.id,
+            platform: s.platform || 'soundcloud',
+            weight: Math.round(s.weight * 1000) / 1000
+          });
+          if (seeds.length >= 8) break;
+        }
+      }
+    }
 
     const dominantScript = cyrillicCount > (allTracks.length ? allTracks.length * 0.35 : 0) ? 'Cyrillic' : 'Latin';
     const avgDuration = durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : null;
@@ -12954,6 +12989,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     isExtendingMyWave = true;
     try {
       const profile = await computeTasteProfile();
+
+      // Dynamically blend current playing track + queue history + taste seeds
+      const dynamicSeeds = [];
+      const seenSeedKeys = new Set();
+
+      if (state.currentTrack && state.currentTrack.title) {
+        const k = getTrackNormalizedKey(state.currentTrack.artist, state.currentTrack.title);
+        if (k) seenSeedKeys.add(k);
+        dynamicSeeds.push({
+          id: state.currentTrack.id || '',
+          artist: state.currentTrack.artist || '',
+          title: state.currentTrack.title || '',
+          platform: 'soundcloud',
+          weight: 5
+        });
+      }
+
+      if (Array.isArray(state.queue) && state.queueIndex >= 0) {
+        for (let i = Math.max(0, state.queueIndex - 2); i <= state.queueIndex; i++) {
+          const t = state.queue[i];
+          if (t && t.title) {
+            const k = getTrackNormalizedKey(t.artist, t.title);
+            if (k && !seenSeedKeys.has(k)) {
+              seenSeedKeys.add(k);
+              dynamicSeeds.push({
+                id: t.id || '',
+                artist: t.artist || '',
+                title: t.title || '',
+                platform: 'soundcloud',
+                weight: 3.5
+              });
+            }
+          }
+        }
+      }
+
+      if (profile && Array.isArray(profile.seeds)) {
+        for (const s of profile.seeds) {
+          const k = getTrackNormalizedKey(s.artist, s.title);
+          if (k && !seenSeedKeys.has(k) && dynamicSeeds.length < 6) {
+            seenSeedKeys.add(k);
+            dynamicSeeds.push({ ...s, weight: 2 });
+          }
+        }
+      }
+
       const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/vibe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -12961,18 +13042,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           history: (state.history || []).slice(0, 30),
           favorites: (state.favorites || []).slice(0, 25),
           platform: 'soundcloud',
-          limit: 8,
+          limit: 10,
           clientProfile: profile,
-          seeds: profile.seeds,
-          avoid: getWaveAvoid()
+          seeds: dynamicSeeds.length > 0 ? dynamicSeeds : profile.seeds,
+          avoid: getWaveAvoid(),
+          refresh: true
         })
       });
       const data = await res.json();
       if (data.success && Array.isArray(data.tracks) && data.tracks.length > 0) {
-        const existingIds = new Set(state.queue.map(t => getTrackCanonicalId(t)));
+        const existingIds = new Set(state.queue.map(t => String(t.id || '')));
         const existingKeys = new Set(state.queue.map(t => getTrackNormalizedKey(t.artist, t.title)));
         const newTracks = data.tracks.filter(t => {
-          const cid = getTrackCanonicalId(t);
+          const cid = String(t.id || '');
           const nkey = getTrackNormalizedKey(t.artist, t.title);
           return !existingIds.has(cid) && !existingKeys.has(nkey);
         });
@@ -12995,18 +13077,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (btnPlayMyWave) {
     btnPlayMyWave.addEventListener('click', async () => {
       if (!myWaveCurrentTracks || myWaveCurrentTracks.length === 0) {
-        const profile = await computeTasteProfile();
-        if (profile.trackCount < 5) {
-          showToast('Save at least 5 tracks to tune My Wave');
-          return;
-        }
-        await loadHomePage();
+        await loadHomePage(true);
       }
       if (myWaveCurrentTracks && myWaveCurrentTracks.length > 0) {
         state.myWaveActive = true;
         const startIdx = (currentWaveFocusedIndex >= 0 && currentWaveFocusedIndex < myWaveCurrentTracks.length) ? currentWaveFocusedIndex : 0;
         playTrack(myWaveCurrentTracks[startIdx], [...myWaveCurrentTracks], startIdx);
         showToast('Playing My Wave');
+      } else {
+        showToast('Tuning My Wave...');
       }
     });
   }
