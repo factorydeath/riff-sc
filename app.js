@@ -2608,6 +2608,59 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  function syncHomeWaveCard(track) {
+    if (!track) return;
+    const vibeGrid = document.getElementById('home-vibe-grid');
+    if (!vibeGrid) return;
+
+    const isWave = homeMode === 'wave';
+    let tracks = isWave ? myWaveCurrentTracks : jumpBackCurrentTracks;
+    if (!Array.isArray(tracks)) return;
+
+    let idx = tracks.findIndex(t => isSameTrack(t, track));
+
+    if (idx === -1 && isWave && state.myWaveActive) {
+      idx = tracks.length;
+      tracks.push(track);
+      vibeGrid.appendChild(buildHomeCard(track, 'wave', idx));
+    }
+
+    if (idx !== -1) {
+      currentWaveFocusedIndex = idx;
+      scrollCarouselTo(vibeGrid, idx);
+      const titleEl = document.getElementById(isWave ? 'my-wave-focused-title' : 'jump-focused-title');
+      const artistEl = document.getElementById(isWave ? 'my-wave-focused-artist' : 'jump-focused-artist');
+      const ambientEl = document.getElementById(isWave ? 'my-wave-ambient-light' : 'jump-ambient-light');
+
+      if (titleEl) {
+        titleEl.textContent = track.title || 'Untitled';
+        updateTextFade(titleEl);
+      }
+      if (artistEl) {
+        artistEl.textContent = track.artist || 'Unknown';
+        updateTextFade(artistEl);
+      }
+      const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || track.image || '';
+      updateAmbientLight(ambientEl, thumb);
+
+      const cards = vibeGrid.querySelectorAll('.my-wave-track-card');
+      cards.forEach((card, j) => {
+        const dist = Math.abs(j - idx);
+        card.classList.remove('near', 'far');
+        if (dist === 0) {
+          card.style.zIndex = '10';
+        } else if (dist === 1) {
+          card.classList.add('near');
+          card.style.zIndex = '5';
+        } else {
+          card.classList.add('far');
+          card.style.zIndex = '1';
+        }
+      });
+      vibeGrid._focusedIndex = idx;
+    }
+  }
+
   function updateNowPlayingUI(track) {
     if (el.playbarTitle) el.playbarTitle.textContent = track.title || 'Untitled';
     if (el.playbarTitle) el.playbarTitle.dataset.origTitle = track.title || '';
@@ -2688,6 +2741,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateThemeFromState();
     updateMediaSession();
     if (state.isTvKaraokeOpen) updateTvKaraokeMeta();
+    syncHomeWaveCard(track);
   }
 
   function updateRightPanelBanner(thumbUrl) {
@@ -2995,6 +3049,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (state.history.length > 100) state.history.pop();
     localStorage.setItem('devsize_history', JSON.stringify(state.history));
     if (state.currentView === 'history') renderHistoryView();
+
+    if (state.myWaveActive) {
+      if (!state.waveSessionPlayedIds) state.waveSessionPlayedIds = new Set();
+      if (track.id) state.waveSessionPlayedIds.add(String(track.id));
+      const nKey = (typeof getTrackNormalizedKey === 'function') ? getTrackNormalizedKey(track.artist, track.title) : '';
+      if (nKey) state.waveSessionPlayedIds.add(nKey);
+
+      const tracksAhead = state.queue.length - 1 - state.queueIndex;
+      if (tracksAhead < 5 && typeof extendMyWaveQueue === 'function') {
+        extendMyWaveQueue();
+      }
+    }
 
     updateNowPlayingUI(track);
     updatePlayPauseButton(false, true);
@@ -5218,7 +5284,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     recordPlayedIndex(nextIdx);
     playTrack(state.queue[nextIdx]);
 
-    if (state.myWaveActive && state.queueIndex >= state.queue.length - 5 && typeof extendMyWaveQueue === 'function') {
+    if (state.myWaveActive && (state.queue.length - 1 - state.queueIndex) < 5 && typeof extendMyWaveQueue === 'function') {
       extendMyWaveQueue();
     }
   }
@@ -13060,6 +13126,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         if (newTracks.length > 0) {
           state.queue.push(...newTracks);
+          if (Array.isArray(myWaveCurrentTracks)) {
+            const vibeGrid = document.getElementById('home-vibe-grid');
+            const frag = document.createDocumentFragment();
+            newTracks.forEach(t => {
+              const newIdx = myWaveCurrentTracks.length;
+              myWaveCurrentTracks.push(t);
+              if (vibeGrid) {
+                frag.appendChild(buildHomeCard(t, 'wave', newIdx));
+              }
+            });
+            if (vibeGrid) vibeGrid.appendChild(frag);
+          }
           updateQueueBadge();
           renderQueueView();
           return true;
