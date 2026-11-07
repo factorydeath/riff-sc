@@ -11697,6 +11697,84 @@ document.addEventListener('DOMContentLoaded', async () => {
   let downloadBatch = null;
   let selectedFormat = localStorage.getItem('riff_download_format') || 'mp3';
   let selectedQuality = '0';
+  let selectedDownloadPreset = 'none';
+
+  function getDownloadPresetInfo(presetId) {
+    if (presetId === 'none') {
+      return { id: 'none', name: 'Default', desc: 'Original sound, no effects', settings: null };
+    }
+    if (presetId === 'current') {
+      return { id: 'current', name: 'Current active', desc: 'Current player effects', settings: { ...state.audioSettings } };
+    }
+    const preset = getAllPresets().find(p => p.id === presetId);
+    if (!preset) return { id: presetId, name: presetId, desc: '', settings: null };
+    const s = preset.settings || {};
+    let desc = '';
+    if (preset.id === 'p_speedup') desc = 'Speed 1.35x (Original pitch)';
+    else if (preset.id === 'p_speedup_pitch') desc = 'Speed 1.30x (Tape pitch)';
+    else if (preset.id === 'p_slowed') desc = '0.82x speed + Reverb + Echo';
+    else if (preset.id === 'p_nightcore') desc = '1.25x speed + Reverb';
+    else if (preset.id === 'p_distortion') desc = 'Heavy distortion + Boost';
+    else if (preset.id === 'p_default') desc = 'Original default sound';
+    else {
+      const parts = [];
+      if (s.speedPitch && s.speedPitch !== 1.0) parts.push(`${s.speedPitch}x speed`);
+      else if (s.speed && s.speed !== 1.0) parts.push(`${s.speed}x tempo`);
+      if (s.reverb) parts.push(`Reverb ${s.reverb}%`);
+      if (s.echo) parts.push(`Echo ${s.echo}%`);
+      if (s.distortion) parts.push(`Distortion ${s.distortion}%`);
+      desc = parts.join(' • ') || 'Custom preset';
+    }
+    return { id: preset.id, name: preset.name, desc, settings: s };
+  }
+
+  function renderDownloadPresetChips() {
+    const container = document.getElementById('download-preset-chips-grid');
+    const descEl = document.getElementById('download-preset-desc');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const presetsToOffer = [
+      { id: 'none', label: 'Default', tag: 'Original' }
+    ];
+
+    const hasActiveMod = (audioEngine && typeof audioEngine.isModified === 'function' && audioEngine.isModified()) || (state.activePresetId && state.activePresetId !== 'p_default');
+    if (hasActiveMod) {
+      presetsToOffer.push({ id: 'current', label: 'Current active', tag: 'Active' });
+    }
+
+    getAllPresets().forEach(p => {
+      if (p.id === 'p_default') return;
+      let tag = '';
+      if (p.id === 'p_speedup') tag = '1.35x';
+      else if (p.id === 'p_speedup_pitch') tag = '1.30x';
+      else if (p.id === 'p_slowed') tag = '0.82x+Rev';
+      else if (p.id === 'p_nightcore') tag = '1.25x+Rev';
+      else if (p.id === 'p_distortion') tag = 'Dist';
+      else tag = 'Custom';
+      presetsToOffer.push({ id: p.id, label: p.name, tag });
+    });
+
+    presetsToOffer.forEach(item => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'download-preset-chip';
+      if (selectedDownloadPreset === item.id) chip.classList.add('active');
+      chip.dataset.presetId = item.id;
+      chip.innerHTML = `<span>${escapeHtml(item.label)}</span>${item.tag ? `<span class="preset-chip-tag">${escapeHtml(item.tag)}</span>` : ''}`;
+      chip.addEventListener('click', () => {
+        selectedDownloadPreset = item.id;
+        container.querySelectorAll('.download-preset-chip').forEach(c => c.classList.toggle('active', c.dataset.presetId === item.id));
+        const info = getDownloadPresetInfo(item.id);
+        if (descEl) descEl.textContent = info.desc || info.name;
+        updateDownloadBtnLabel();
+      });
+      container.appendChild(chip);
+    });
+
+    const curInfo = getDownloadPresetInfo(selectedDownloadPreset);
+    if (descEl) descEl.textContent = curInfo.desc || curInfo.name;
+  }
 
   function updateDownloadBtnLabel() {
     if (!el.downloadBtnText) return;
@@ -11704,7 +11782,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const count = downloadBatch.tracks.length;
       el.downloadBtnText.textContent = `Download ${count} track${count === 1 ? '' : 's'}`;
     } else {
-      el.downloadBtnText.textContent = `Download ${selectedFormat.toUpperCase()}`;
+      const info = getDownloadPresetInfo(selectedDownloadPreset);
+      if (info && info.id !== 'none' && info.id !== 'p_default') {
+        el.downloadBtnText.textContent = `Download ${selectedFormat.toUpperCase()} (${info.name})`;
+      } else {
+        el.downloadBtnText.textContent = `Download ${selectedFormat.toUpperCase()}`;
+      }
     }
   }
 
@@ -11764,6 +11847,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (el.downloadPreviewFallback) el.downloadPreviewFallback.style.display = 'flex';
     }
 
+    selectedDownloadPreset = 'none';
+    renderDownloadPresetChips();
     updateDownloadBtnLabel();
     updateLosslessQualityState();
     updateDownloadCaptionPath();
@@ -12113,16 +12198,30 @@ document.addEventListener('DOMContentLoaded', async () => {
           bufferToProcess = trimAudioBuffer(decodeCtx, decodedBuffer, startSec, endSec);
         }
 
-        const applyEffects = Boolean(document.getElementById('download-apply-effects')?.checked);
         let finalBuffer = bufferToProcess;
-        if (applyEffects) {
-          const currentSettings = {
-            ...state.audioSettings,
-            volume: 1.0,
-            eq: { ...(state.audioSettings.eq || {}) },
-            eqBands: Array.isArray(state.audioSettings.eqBands) ? [...state.audioSettings.eqBands] : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-          };
-          finalBuffer = await audioEngine.renderOffline(bufferToProcess, currentSettings);
+        let tempoParam = '';
+        let presetTag = '';
+
+        if (selectedDownloadPreset && selectedDownloadPreset !== 'none' && selectedDownloadPreset !== 'p_default') {
+          const info = getDownloadPresetInfo(selectedDownloadPreset);
+          const pSettings = info.settings;
+          if (pSettings) {
+            presetTag = info.name;
+            const isPureTempo = pSettings.speed && pSettings.speed !== 1.0 && (pSettings.speedPitch === 1.0 || !pSettings.speedPitch) && (pSettings.pitch === 0 || !pSettings.pitch);
+
+            const settingsToRender = {
+              ...pSettings,
+              volume: 1.0,
+              speed: isPureTempo ? 1.0 : (pSettings.speed || 1.0),
+              eq: { ...(pSettings.eq || {}) },
+              eqBands: Array.isArray(pSettings.eqBands) ? [...pSettings.eqBands] : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            };
+
+            finalBuffer = await audioEngine.renderOffline(bufferToProcess, settingsToRender);
+            if (isPureTempo) {
+              tempoParam = `&tempo=${encodeURIComponent(pSettings.speed)}`;
+            }
+          }
         }
 
         if (downloadAbort?.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
@@ -12131,7 +12230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (downloadAbort?.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
-        const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(t.title || 'untitled')}&artist=${encodeURIComponent(t.artist || 'unknown artist')}&format=${selectedFormat}&quality=${selectedQuality}`;
+        const titleForFile = presetTag ? `${t.title || 'untitled'} (${presetTag})` : (t.title || 'untitled');
+        const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(titleForFile)}&artist=${encodeURIComponent(t.artist || 'unknown artist')}&format=${selectedFormat}&quality=${selectedQuality}${tempoParam}`;
         const resEncode = await fetch(encodeUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'audio/wav' },
@@ -12147,7 +12247,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (!dataEncode.success) throw new Error(dataEncode.error || 'Failed to encode');
 
-        showToast(`Download complete: saved to ${dataEncode.directory ? dataEncode.directory + '/' : ''}${dataEncode.filename}`, 'info');
+        showToast(presetTag ? `Saved with preset "${presetTag}": ${dataEncode.filename}` : `Download complete: saved to ${dataEncode.directory ? dataEncode.directory + '/' : ''}${dataEncode.filename}`, 'info');
         if (el.downloadModal) closeModal(el.downloadModal);
       } catch (err) {
         if (err.name === 'AbortError') return;

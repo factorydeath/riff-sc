@@ -2498,6 +2498,16 @@ async function handleEncode(req, res, parsedUrl) {
   });
 
   const ffmpegArgs = ['-y', '-i', renderTempPath];
+  const tempo = parseFloat(parsedUrl.query.tempo);
+  if (!isNaN(tempo) && tempo > 0.4 && tempo < 3.0 && Math.abs(tempo - 1.0) > 0.01) {
+    if (tempo > 2.0) {
+      ffmpegArgs.push('-af', 'atempo=2.0,atempo=' + (tempo / 2.0).toFixed(4));
+    } else if (tempo < 0.5) {
+      ffmpegArgs.push('-af', 'atempo=0.5,atempo=' + (tempo / 0.5).toFixed(4));
+    } else {
+      ffmpegArgs.push('-af', 'atempo=' + tempo.toFixed(4));
+    }
+  }
   if (['mp3', 'm4a', 'opus', 'ogg'].includes(ext)) {
     ffmpegArgs.push('-b:a', bitrate);
   }

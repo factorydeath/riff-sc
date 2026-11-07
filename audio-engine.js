@@ -616,11 +616,17 @@
     async renderOffline(sourceBuffer, settingsOverride, hqOverride) {
       const s = settingsOverride || { ...this.audioSettings };
       const hq = hqOverride || { ...this.hqSettings };
-      const useHq = this.hqEnabled;
+      const hasDspEffects = (s.reverb > 0 || s.echo > 0 || s.distortion > 0);
+      const useHq = (hqOverride && hqOverride.enabled !== undefined)
+        ? hqOverride.enabled
+        : (this.hqEnabled && !hasDspEffects);
 
-      const speedFactor = (s.speedPitch !== 1.0 || s.pitch !== 0)
-        ? s.speedPitch * Math.pow(2, s.pitch / 12)
-        : s.speed;
+      const isPureTempo = s.speed && s.speed !== 1.0 && (s.speedPitch === 1.0 || !s.speedPitch) && (s.pitch === 0 || !s.pitch);
+      const speedFactor = isPureTempo
+        ? 1.0
+        : ((s.speedPitch !== 1.0 || s.pitch !== 0)
+          ? (s.speedPitch || 1.0) * Math.pow(2, (s.pitch || 0) / 12)
+          : (s.speed || 1.0));
       const outputLength = Math.ceil(sourceBuffer.length / Math.max(0.1, speedFactor));
 
       const offline = new OfflineAudioContext(

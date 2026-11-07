@@ -3851,6 +3851,8 @@ body.perf #sleep-timer-status.active::before {
 .download-modal-card {
   width: min(560px, 92vw) !important;
   max-width: 560px !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
   padding: 28px !important;
   border-radius: 28px !important;
   border: none !important;
@@ -3875,7 +3877,8 @@ body.perf #sleep-timer-status.active::before {
 }
 
 #download-modal.batch-mode #download-trim-section,
-#download-modal.batch-mode #download-effects-section {
+#download-modal.batch-mode #download-effects-section,
+#download-modal.batch-mode #download-preset-section {
   display: none;
 }
 
@@ -4077,6 +4080,80 @@ body.perf #sleep-timer-status.active::before {
 
 .download-effects-section {
   margin-top: 24px;
+}
+
+.download-preset-section {
+  margin-top: 18px;
+}
+
+.download-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.download-preset-desc {
+  font-size: calc(13px * var(--font-scale, 1));
+  color: var(--md-sys-color-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.download-preset-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 2px 0;
+}
+
+.download-preset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--md-sys-color-surface-container-high);
+  border: 1px solid transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform 0.12s ease;
+  white-space: nowrap;
+}
+
+.download-preset-chip:hover {
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+}
+
+.download-preset-chip.active {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border-color: var(--md-sys-color-primary);
+  font-weight: 600;
+}
+
+.download-preset-chip .preset-chip-tag {
+  font-size: calc(11px * var(--font-scale, 1));
+  opacity: 0.8;
+  font-weight: 400;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.download-preset-chip.active .preset-chip-tag {
+  background: rgba(255, 255, 255, 0.18);
+  opacity: 0.95;
 }
 
 .effects-toggle-row {
