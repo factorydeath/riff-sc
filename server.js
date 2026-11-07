@@ -2401,6 +2401,67 @@ function handleTmpFile(req, res, parsedUrl) {
   });
 }
 
+
+async function handleTempCover(req, res) {
+  const downloadsDir = getDownloadsDir();
+  const tmpDir = path.join(downloadsDir, '.tmp');
+  if (!fs.existsSync(tmpDir)) {
+    try { await fs.promises.mkdir(tmpDir, { recursive: true }); } catch (_) {}
+  }
+  let body = '';
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.includes('application/json')) {
+    req.on('data', c => { body += c; if (body.length > 25 * 1024 * 1024) req.destroy(); });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+        let buf = null;
+        let ext = 'jpg';
+        if (data.data && typeof data.data === 'string' && data.data.startsWith('data:image/')) {
+          const m = data.data.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+          if (m) {
+            ext = m[1].replace('jpeg', 'jpg');
+            buf = Buffer.from(m[2], 'base64');
+          }
+        } else if (data.url && typeof data.url === 'string') {
+          if (data.url.startsWith('file:///')) {
+            const localP = url.fileURLToPath(data.url);
+            if (fs.existsSync(localP)) buf = await fs.promises.readFile(localP);
+          } else if (data.url.startsWith('http://') || data.url.startsWith('https://')) {
+            const r = await fetch(data.url);
+            if (r.ok) buf = Buffer.from(await r.arrayBuffer());
+          }
+        }
+        if (!buf) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ success: false, error: 'Invalid cover data' }));
+        }
+        const coverId = `cover_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        await fs.promises.writeFile(path.join(tmpDir, coverId), buf);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, coverId }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: err.message }));
+      }
+    });
+  } else {
+    const ext = contentType.includes('png') ? 'png' : (contentType.includes('webp') ? 'webp' : 'jpg');
+    const coverId = `cover_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const p = path.join(tmpDir, coverId);
+    const ws = fs.createWriteStream(p);
+    req.pipe(ws);
+    ws.on('finish', () => {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, coverId }));
+    });
+    ws.on('error', err => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    });
+  }
+}
+
 async function handleEncode(req, res, parsedUrl) {
   const sourceName = parsedUrl.query.name || '';
   const title = parsedUrl.query.title || 'untitled';
@@ -2513,7 +2574,61 @@ async function handleEncode(req, res, parsedUrl) {
     }
   });
 
+  const canCarryCover = ['mp3', 'm4a', 'flac'].includes(ext);
+  let coverTempPath = null;
+  let coverNeedsCleanup = false;
+
+  const coverId = parsedUrl.query.cover_id;
+  const coverUrl = parsedUrl.query.cover_url;
+
+  if (canCarryCover) {
+    if (coverId && /^cover_[\w.-]+\.(jpe?g|png|webp)$/i.test(coverId)) {
+      const p = path.join(tmpDir, coverId);
+      if (fs.existsSync(p)) coverTempPath = p;
+    } else if (coverUrl) {
+      try {
+        if (coverUrl.startsWith('file:///')) {
+          const localPath = url.fileURLToPath(coverUrl);
+          if (fs.existsSync(localPath)) coverTempPath = localPath;
+        } else if (coverUrl.startsWith('http://') || coverUrl.startsWith('https://')) {
+          const coverRes = await fetch(coverUrl);
+          if (coverRes.ok) {
+            const coverBuf = Buffer.from(await coverRes.arrayBuffer());
+            const extMatch = coverUrl.match(/\.(png|jpe?g|webp)($|\?)/i);
+            const coverExt = extMatch ? extMatch[1].toLowerCase() : 'jpg';
+            coverTempPath = path.join(tmpDir, `cover_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${coverExt}`);
+            await fs.promises.writeFile(coverTempPath, coverBuf);
+            coverNeedsCleanup = true;
+          }
+        }
+      } catch (e) {
+        try { logger.warn('Failed to load cover for encode: ' + e.message); } catch (_) {}
+      }
+    }
+  }
+
   const ffmpegArgs = ['-y', '-i', renderTempPath];
+  if (coverTempPath && canCarryCover) {
+    if (ext === 'mp3') {
+      ffmpegArgs.push(
+        '-i', coverTempPath,
+        '-map', '0:a',
+        '-map', '1:v',
+        '-c:v', 'mjpeg',
+        '-id3v2_version', '3',
+        '-metadata:s:v', 'title=Album cover',
+        '-metadata:s:v', 'comment=Cover (front)'
+      );
+    } else if (ext === 'flac' || ext === 'm4a') {
+      ffmpegArgs.push(
+        '-i', coverTempPath,
+        '-map', '0:a',
+        '-map', '1:v',
+        '-c:v', 'copy',
+        '-disposition:v:0', 'attached_pic'
+      );
+    }
+  }
   const tempo = parseFloat(parsedUrl.query.tempo);
   if (!isNaN(tempo) && tempo > 0.4 && tempo < 3.0 && Math.abs(tempo - 1.0) > 0.01) {
     if (tempo > 2.0) {
@@ -2559,6 +2674,11 @@ async function handleEncode(req, res, parsedUrl) {
     }
   } finally {
     try { await fs.promises.unlink(renderTempPath); } catch (_) {}
+    if (coverNeedsCleanup && coverTempPath) {
+      try { await fs.promises.unlink(coverTempPath); } catch (_) {}
+    } else if (coverId && /^cover_[\w.-]+\.(jpe?g|png|webp)$/i.test(coverId)) {
+      try { await fs.promises.unlink(path.join(tmpDir, coverId)); } catch (_) {}
+    }
     if (sourceName && /^[\w .-]+\.wav$/.test(sourceName)) {
       try { await fs.promises.unlink(path.join(tmpDir, sourceName)); } catch (_) {}
     }
@@ -2652,6 +2772,7 @@ const TOKEN_PROTECTED_ROUTES = new Set([
   '/api/offline-delete',
   '/api/clear-offline-library',
   '/api/save-custom-lyrics',
+  '/api/temp-cover',
   '/api/encode',
   '/api/sc-status',
   '/api/sc-likes',
@@ -3623,6 +3744,10 @@ async function handleRequest(req, res) {
 
   if (parsedUrl.pathname === '/api/tmp-file') {
     return handleTmpFile(req, res, parsedUrl);
+  }
+
+  if (parsedUrl.pathname === '/api/temp-cover' && req.method === 'POST') {
+    return handleTempCover(req, res);
   }
 
   if (parsedUrl.pathname === '/api/encode' && req.method === 'POST') {

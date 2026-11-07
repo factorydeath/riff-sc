@@ -88,3 +88,39 @@ test('soundcloud account endpoints require the token and report not-authenticate
     await stopServer();
   }
 });
+
+test('temp cover endpoint accepts data url and returns coverId', async () => {
+  const port = await startServer(0);
+  try {
+    const postData = JSON.stringify({
+      data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+    });
+    const res = await new Promise((resolve, reject) => {
+      const req = http.request({
+        host: '127.0.0.1',
+        port,
+        path: '/api/temp-cover',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-riff-token': getServerToken(),
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      }, (res) => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => resolve({ statusCode: res.statusCode, body }));
+      });
+      req.on('error', reject);
+      req.write(postData);
+      req.end();
+    });
+
+    assert.strictEqual(res.statusCode, 200);
+    const parsed = JSON.parse(res.body);
+    assert.strictEqual(parsed.success, true);
+    assert.ok(typeof parsed.coverId === 'string' && parsed.coverId.startsWith('cover_'));
+  } finally {
+    await stopServer();
+  }
+});

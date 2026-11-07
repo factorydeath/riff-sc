@@ -1423,6 +1423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                           navLocal: document.getElementById('nav-local'),
                           navHistory: document.getElementById('nav-history'),
                           navQueue: document.getElementById('nav-queue'),
+                          navAccount: document.getElementById('nav-account'),
                           navSettings: document.getElementById('nav-settings'),
                           favoritesCount: document.getElementById('favorites-count'),
                           localCount: document.getElementById('local-count'),
@@ -1451,6 +1452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                           viewPlaylistDetail: document.getElementById('view-playlist-detail'),
                           viewAlbum: document.getElementById('view-album'),
                           viewArtist: document.getElementById('view-artist'),
+                          viewAccount: document.getElementById('view-account'),
                           viewSettings: document.getElementById('view-settings'),
 
                           btnBackAlbum: document.getElementById('btn-back-album'),
@@ -7954,11 +7956,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     requestAnimationFrame(() => {
       document.querySelectorAll('.no-enter-anim').forEach(c => c.classList.remove('no-enter-anim'));
-      [el.viewDiscover, el.viewFavorites, el.viewLocal, el.viewHistory, el.viewQueue, el.viewPlaylistDetail, el.viewAlbum, el.viewArtist, el.viewSettings].forEach(v => {
+      [el.viewDiscover, el.viewFavorites, el.viewLocal, el.viewHistory, el.viewQueue, el.viewPlaylistDetail, el.viewAlbum, el.viewArtist, el.viewAccount, el.viewSettings].forEach(v => {
         if (v) v.classList.remove('active');
       });
 
-        [el.navDiscover, el.navFavorites, el.navLocal, el.navHistory, el.navQueue, el.navSettings].forEach(n => {
+        [el.navDiscover, el.navFavorites, el.navLocal, el.navHistory, el.navQueue, el.navAccount, el.navSettings].forEach(n => {
           if (n) n.classList.remove('active');
         });
 
@@ -7987,6 +7989,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (el.viewAlbum) el.viewAlbum.classList.add('active');
           } else if (viewName === 'artist') {
             if (el.viewArtist) el.viewArtist.classList.add('active');
+                    } else if (viewName === 'account') {
+            if (el.viewAccount) el.viewAccount.classList.add('active');
+            if (el.navAccount) el.navAccount.classList.add('active');
+            loadScAccount();
           } else if (viewName === 'settings') {
             if (el.viewSettings) el.viewSettings.classList.add('active');
             if (el.navSettings) el.navSettings.classList.add('active');
@@ -8261,6 +8267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (el.navLocal) el.navLocal.addEventListener('click', () => switchView('local'));
   if (el.navHistory) el.navHistory.addEventListener('click', () => switchView('history'));
   if (el.navQueue) el.navQueue.addEventListener('click', () => switchView('queue'));
+  if (el.navAccount) el.navAccount.addEventListener('click', () => switchView('account'));
   if (el.navSettings) el.navSettings.addEventListener('click', () => switchView('settings'));
 
   if (el.btnAddLocalFiles) el.btnAddLocalFiles.addEventListener('click', () => importLocalFiles());
@@ -11699,6 +11706,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   let selectedQuality = '0';
   let selectedDownloadPreset = 'none';
 
+  let customDownloadCover = null;
+
+  async function handlePickDownloadCover() {
+    let chosenUrl = null;
+    if (window.electronAPI && window.electronAPI.pickMedia) {
+      const picked = await window.electronAPI.pickMedia();
+      if (picked) {
+        const isImg = /\.(png|jpe?g|webp|gif)($|\?)/i.test(picked);
+        if (isImg) chosenUrl = picked;
+        else showToast('Cover must be an image (PNG, JPG, WebP)', 'error');
+      }
+    } else {
+      const fileInput = document.getElementById('download-cover-file-input');
+      if (fileInput) fileInput.click();
+      return;
+    }
+    if (chosenUrl) {
+      applyCustomDownloadCover(chosenUrl);
+    }
+  }
+
+  function applyCustomDownloadCover(urlOrData) {
+    customDownloadCover = urlOrData;
+    if (el.downloadPreviewThumb) {
+      el.downloadPreviewThumb.src = urlOrData;
+      el.downloadPreviewThumb.style.display = 'block';
+    }
+    if (el.downloadPreviewFallback) el.downloadPreviewFallback.style.display = 'none';
+    const btnResetCover = document.getElementById('btn-reset-download-cover');
+    if (btnResetCover) btnResetCover.classList.remove('hidden');
+  }
+
+
   function getDownloadPresetInfo(presetId) {
     if (presetId === 'none') {
       return { id: 'none', name: 'Default', desc: 'Original sound, no effects', settings: null };
@@ -11781,13 +11821,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const previewEl = document.getElementById('download-filename-preview-text');
     const hintEl = document.getElementById('download-title-hint');
     const titleInput = document.getElementById('download-custom-title');
+    const artistInput = document.getElementById('download-custom-artist');
     const includeArtistToggle = document.getElementById('download-include-artist-toggle');
     if (!previewEl || !trackToDownload) return;
 
     const origTitle = (trackToDownload.title || '').trim();
+    const origArtist = (trackToDownload.artist || '').trim();
     const userVal = titleInput ? titleInput.value : '';
+    const userArtistVal = artistInput ? artistInput.value : '';
     const trimmedVal = userVal.trim();
+    const trimmedArtistVal = userArtistVal.trim();
     const effectiveTitle = trimmedVal || origTitle || 'untitled';
+    const effectiveArtist = trimmedArtistVal || origArtist || 'unknown artist';
 
     if (hintEl) {
       if (!trimmedVal || trimmedVal === origTitle) {
@@ -11800,7 +11845,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const presetInfo = getDownloadPresetInfo(selectedDownloadPreset);
     const presetTag = (presetInfo && presetInfo.id !== 'none' && presetInfo.id !== 'p_default') ? presetInfo.name : '';
 
-    const cleanArtist = (trackToDownload.artist || '').trim();
+    const cleanArtist = effectiveArtist.trim();
     const hasArtist = cleanArtist && cleanArtist.toLowerCase() !== 'unknown artist' && cleanArtist.toLowerCase() !== 'unknown';
     const includeArtist = includeArtistToggle ? includeArtistToggle.checked : true;
 
@@ -11889,9 +11934,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     selectedDownloadPreset = 'none';
     renderDownloadPresetChips();
+    customDownloadCover = null;
+    const btnResetCover = document.getElementById('btn-reset-download-cover');
+    if (btnResetCover) btnResetCover.classList.add('hidden');
+
     const titleInput = document.getElementById('download-custom-title');
     if (titleInput) {
       titleInput.value = track.title || '';
+    }
+    const artistInput = document.getElementById('download-custom-artist');
+    if (artistInput) {
+      artistInput.value = track.artist || '';
     }
     const includeArtistToggle = document.getElementById('download-include-artist-toggle');
     if (includeArtistToggle) {
@@ -11986,6 +12039,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateDownloadFilenamePreview();
         customTitleInput.focus();
       }
+    });
+  }
+
+  const customArtistInput = document.getElementById('download-custom-artist');
+  if (customArtistInput) {
+    customArtistInput.addEventListener('input', () => {
+      if (el.downloadPreviewArtist) {
+        el.downloadPreviewArtist.textContent = customArtistInput.value.trim() || (trackToDownload ? trackToDownload.artist : '') || 'Artist';
+      }
+      updateDownloadFilenamePreview();
+    });
+  }
+
+  const btnResetArtist = document.getElementById('btn-reset-download-artist');
+  if (btnResetArtist) {
+    btnResetArtist.addEventListener('click', () => {
+      if (customArtistInput && trackToDownload) {
+        customArtistInput.value = trackToDownload.artist || '';
+        if (el.downloadPreviewArtist) el.downloadPreviewArtist.textContent = trackToDownload.artist || 'Artist';
+        updateDownloadFilenamePreview();
+        customArtistInput.focus();
+      }
+    });
+  }
+
+  const thumbWrap = document.getElementById('download-thumb-wrap');
+  if (thumbWrap) {
+    thumbWrap.addEventListener('click', handlePickDownloadCover);
+    thumbWrap.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePickDownloadCover(); } });
+  }
+
+  const btnChangeCover = document.getElementById('btn-change-download-cover');
+  if (btnChangeCover) {
+    btnChangeCover.addEventListener('click', handlePickDownloadCover);
+  }
+
+  const btnResetCoverEl = document.getElementById('btn-reset-download-cover');
+  if (btnResetCoverEl) {
+    btnResetCoverEl.addEventListener('click', () => {
+      customDownloadCover = null;
+      btnResetCoverEl.classList.add('hidden');
+      if (trackToDownload) {
+        if (trackToDownload.thumbnail) {
+          if (el.downloadPreviewThumb) {
+            el.downloadPreviewThumb.src = trackToDownload.thumbnail;
+            el.downloadPreviewThumb.style.display = 'block';
+          }
+          if (el.downloadPreviewFallback) el.downloadPreviewFallback.style.display = 'none';
+        } else {
+          if (el.downloadPreviewThumb) el.downloadPreviewThumb.style.display = 'none';
+          if (el.downloadPreviewFallback) el.downloadPreviewFallback.style.display = 'flex';
+        }
+      }
+    });
+  }
+
+  const coverFileInput = document.getElementById('download-cover-file-input');
+  if (coverFileInput) {
+    coverFileInput.addEventListener('change', () => {
+      const file = coverFileInput.files && coverFileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          applyCustomDownloadCover(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+      coverFileInput.value = '';
     });
   }
 
@@ -12308,13 +12429,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (downloadAbort?.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
         const customTitleInput = document.getElementById('download-custom-title');
+        const customArtistInput = document.getElementById('download-custom-artist');
         const userTitle = customTitleInput ? customTitleInput.value.trim() : '';
+        const userArtist = customArtistInput ? customArtistInput.value.trim() : '';
         const effectiveTitle = userTitle || t.title || 'untitled';
+        const effectiveArtist = userArtist || t.artist || 'unknown artist';
 
         const includeArtistToggle = document.getElementById('download-include-artist-toggle');
         const includeArtist = includeArtistToggle ? includeArtistToggle.checked : true;
 
-        const cleanArtist = (t.artist || '').trim();
+        const cleanArtist = effectiveArtist.trim();
         const hasArtist = cleanArtist && cleanArtist.toLowerCase() !== 'unknown artist' && cleanArtist.toLowerCase() !== 'unknown';
 
         let baseFileName = effectiveTitle;
@@ -12331,7 +12455,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         const titleForFile = presetTag ? `${effectiveTitle} (${presetTag})` : effectiveTitle;
         const filenameForFile = presetTag ? `${baseFileName} (${presetTag})` : baseFileName;
 
-        const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(titleForFile)}&artist=${encodeURIComponent(t.artist || 'unknown artist')}&filename=${encodeURIComponent(filenameForFile)}&format=${selectedFormat}&quality=${selectedQuality}${tempoParam}`;
+        let coverParam = '';
+        const activeCover = customDownloadCover || t.thumbnail;
+        if (activeCover) {
+          if (typeof activeCover === 'string' && activeCover.startsWith('data:image/')) {
+            try {
+              const covRes = await fetch(`http://127.0.0.1:${state.serverPort}/api/temp-cover`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-riff-token': state.serverToken || '' },
+                body: JSON.stringify({ data: activeCover })
+              });
+              const covData = await covRes.json();
+              if (covData && covData.coverId) {
+                coverParam = `&cover_id=${encodeURIComponent(covData.coverId)}`;
+              }
+            } catch (e) {
+              console.warn('Failed to upload temp cover:', e);
+            }
+          } else if (typeof activeCover === 'string') {
+            coverParam = `&cover_url=${encodeURIComponent(activeCover)}`;
+          }
+        }
+
+        const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(titleForFile)}&artist=${encodeURIComponent(effectiveArtist)}&filename=${encodeURIComponent(filenameForFile)}&format=${selectedFormat}&quality=${selectedQuality}${tempoParam}${coverParam}`;
         const resEncode = await fetch(encodeUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'audio/wav' },

@@ -409,6 +409,15 @@
 
         <div class="rail-divider"></div>
 
+        <button class="nav-item" data-view="account" id="nav-account" title="Account">
+          <div class="nav-indicator">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+        </button>
+
         <button class="nav-item" data-view="settings" id="nav-settings" title="Settings">
           <div class="nav-indicator">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
@@ -705,6 +714,89 @@
             <span class="view-subtitle" id="artist-tracks-count">0 tracks</span>
           </div>
           <div class="tracks-list" id="artist-tracks-list"></div>
+        </div>
+      </section>
+
+      
+      <section class="content-view" id="view-account">
+        <div class="account-view">
+          <div class="view-header">
+            <h2 class="section-title">SoundCloud Account</h2>
+            <span class="view-subtitle" id="sc-account-view-subtitle">Connect your account to sync likes and playlists</span>
+          </div>
+
+          <div class="account-view-card">
+            
+            
+
+            <div class="m3-group">
+            <div class="setting-item" id="sc-account-item">
+              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                  <div id="sc-account-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); overflow: hidden; flex-shrink: 0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-6.5 8-6.5s8 2.3 8 6.5"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column; min-width: 0;">
+                    <span class="setting-name" id="sc-account-name">Not connected</span>
+                    <span id="sc-account-sub" style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline); word-break: break-all;">Sign in to import your likes and playlists</span>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                  <button class="btn-pill-primary" id="btn-sc-login" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1));">Sign in</button>
+                  <button class="btn-outline-pill hidden" id="btn-sc-logout" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1));">Log out</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-item hidden" id="sc-import-likes-item">
+              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="setting-name">Liked tracks</span>
+                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Adds all your SoundCloud likes to Favorites</span>
+                  </div>
+                </div>
+                <button class="btn-pill-primary" id="btn-sc-import-likes" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import</button>
+              </div>
+            </div>
+
+            <div class="setting-item hidden" id="sc-import-playlists-item">
+              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="3" y1="17" x2="10" y2="17"/><line x1="3" y1="21" x2="8" y2="21"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="setting-name">Your playlists</span>
+                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Copies your SoundCloud playlists into Riff</span>
+                  </div>
+                </div>
+                <button class="btn-pill-primary" id="btn-sc-import-playlists" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import all</button>
+              </div>
+            </div>
+
+            <div class="setting-item hidden" id="sc-import-liked-playlists-item">
+              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                  </div>
+                  <div style="display: flex; flex-direction: column;">
+                    <span class="setting-name">Liked playlists</span>
+                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Imports playlists you liked on SoundCloud</span>
+                  </div>
+                </div>
+                <button class="btn-pill-primary" id="btn-sc-import-liked-playlists" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import all</button>
+              </div>
+            </div>
+            </div>
+
+            <div id="sc-playlists-progress" class="hidden" style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline); margin-top: 10px;"></div>
+          </div>
+          </div>
         </div>
       </section>
 
@@ -1453,78 +1545,6 @@
               </div>
             </div>
             </div>
-          </div>
-
-
-          <div class="settings-section" data-cat="account">
-            <span class="settings-section-title">SoundCloud account</span>
-
-            <div class="m3-group">
-            <div class="setting-item" id="sc-account-item">
-              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                  <div id="sc-account-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); overflow: hidden; flex-shrink: 0;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-6.5 8-6.5s8 2.3 8 6.5"/></svg>
-                  </div>
-                  <div style="display: flex; flex-direction: column; min-width: 0;">
-                    <span class="setting-name" id="sc-account-name">Not connected</span>
-                    <span id="sc-account-sub" style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline); word-break: break-all;">Sign in to import your likes and playlists</span>
-                  </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                  <button class="btn-pill-primary" id="btn-sc-login" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1));">Sign in</button>
-                  <button class="btn-outline-pill hidden" id="btn-sc-logout" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1));">Log out</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="setting-item hidden" id="sc-import-likes-item">
-              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                  </div>
-                  <div style="display: flex; flex-direction: column;">
-                    <span class="setting-name">Liked tracks</span>
-                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Adds all your SoundCloud likes to Favorites</span>
-                  </div>
-                </div>
-                <button class="btn-pill-primary" id="btn-sc-import-likes" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import</button>
-              </div>
-            </div>
-
-            <div class="setting-item hidden" id="sc-import-playlists-item">
-              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="3" y1="17" x2="10" y2="17"/><line x1="3" y1="21" x2="8" y2="21"/></svg>
-                  </div>
-                  <div style="display: flex; flex-direction: column;">
-                    <span class="setting-name">Your playlists</span>
-                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Copies your SoundCloud playlists into Riff</span>
-                  </div>
-                </div>
-                <button class="btn-pill-primary" id="btn-sc-import-playlists" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import all</button>
-              </div>
-            </div>
-
-            <div class="setting-item hidden" id="sc-import-liked-playlists-item">
-              <div class="setting-item-top" style="align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; color: var(--md-sys-color-primary); flex-shrink: 0;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                  </div>
-                  <div style="display: flex; flex-direction: column;">
-                    <span class="setting-name">Liked playlists</span>
-                    <span style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline);">Imports playlists you liked on SoundCloud</span>
-                  </div>
-                </div>
-                <button class="btn-pill-primary" id="btn-sc-import-liked-playlists" style="padding: 6px 14px; font-size: calc(12px * var(--font-scale, 1)); flex-shrink: 0;">Import all</button>
-              </div>
-            </div>
-            </div>
-
-            <div id="sc-playlists-progress" class="hidden" style="font-size: calc(12px * var(--font-scale, 1)); color: var(--md-sys-color-outline); margin-top: 10px;"></div>
           </div>
 
 
@@ -2614,15 +2634,25 @@
         </div>
       </div>
       <div class="download-section download-title-section" id="download-title-section">
-        <div class="download-section-header">
-          <span class="download-section-label" >Track name</span>
-          <span class="download-preset-desc" id="download-title-hint">Default title</span>
-        </div>
-        <div class="download-title-input-wrapper">
-          <input type="text" id="download-custom-title" class="download-title-input" placeholder="Track name" spellcheck="false" autocomplete="off">
-          <button type="button" class="download-title-reset-btn" id="btn-reset-download-title" title="Reset to original title" aria-label="Reset title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-          </button>
+        <div class="download-fields-grid">
+          <div class="download-field-group">
+            <div class="download-field-header">
+              <span class="download-field-label">Track name</span>
+              <button type="button" class="download-inline-reset" id="btn-reset-download-title" title="Reset to original title">Reset</button>
+            </div>
+            <div class="download-input-wrapper">
+              <input type="text" id="download-custom-title" class="download-title-input" placeholder="Track name" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+          <div class="download-field-group">
+            <div class="download-field-header">
+              <span class="download-field-label">Author / Artist</span>
+              <button type="button" class="download-inline-reset" id="btn-reset-download-artist" title="Reset to original artist">Reset</button>
+            </div>
+            <div class="download-input-wrapper">
+              <input type="text" id="download-custom-artist" class="download-title-input" placeholder="Artist name" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
         </div>
         <div class="download-title-meta-row">
           <label class="download-artist-toggle-label" id="download-artist-toggle-container">
