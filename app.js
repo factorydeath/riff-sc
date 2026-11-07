@@ -2999,11 +2999,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     scrubPrevKnobX = null;
     scrubProgress = 0;
 
-    if (el.trackLoadingOverlay) {
-      if (el.trackLoadingTitle) el.trackLoadingTitle.textContent = track.title || 'loading track...';
-      if (el.trackLoadingSub) el.trackLoadingSub.textContent = track.artist ? `${track.artist} • buffering stream` : 'buffering audio stream';
-      el.trackLoadingOverlay.classList.remove('hidden');
-    }
+    // Buffering is reflected cleanly on playbar controls without pop-up text
 
     state.loadToken++;
     const currentToken = state.loadToken;
