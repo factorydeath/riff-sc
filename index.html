@@ -2613,6 +2613,28 @@
           <span class="download-preview-artist" id="download-preview-artist">Artist</span>
         </div>
       </div>
+      <div class="download-section download-title-section" id="download-title-section">
+        <div class="download-section-header">
+          <span class="download-section-label" style="margin: 14px 0 6px 0;">Track name</span>
+          <span class="download-preset-desc" id="download-title-hint">Default title</span>
+        </div>
+        <div class="download-title-input-wrapper">
+          <input type="text" id="download-custom-title" class="download-title-input" placeholder="Track name" spellcheck="false" autocomplete="off">
+          <button type="button" class="download-title-reset-btn" id="btn-reset-download-title" title="Reset to original title" aria-label="Reset title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          </button>
+        </div>
+        <div class="download-title-meta-row">
+          <label class="download-artist-toggle-label" id="download-artist-toggle-container">
+            <input type="checkbox" id="download-include-artist-toggle" checked>
+            <span>Include artist in file name</span>
+          </label>
+          <div class="download-filename-preview" id="download-filename-preview">
+            <span class="download-filename-preview-label">File:</span>
+            <span class="download-filename-preview-text" id="download-filename-preview-text"></span>
+          </div>
+        </div>
+      </div>
 
       <div class="download-section">
         <span class="download-section-label">Audio format</span>

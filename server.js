@@ -2424,9 +2424,25 @@ async function handleEncode(req, res, parsedUrl) {
   if (!fs.existsSync(tmpDir)) {
     try { await fs.promises.mkdir(tmpDir, { recursive: true }); } catch (_) {}
   }
+  const customFilenameQuery = parsedUrl.query.filename || parsedUrl.query.custom_filename;
   const cleanTitle = sanitizeFilename(title);
   const cleanArtist = sanitizeFilename(artist);
-  const outFilename = `${cleanArtist} - ${cleanTitle}.${ext}`;
+  const cleanCustom = customFilenameQuery ? sanitizeFilename(customFilenameQuery) : '';
+
+  let outFilename;
+  if (cleanCustom) {
+    outFilename = `${cleanCustom}.${ext}`;
+  } else {
+    const hasArtist = cleanArtist && cleanArtist.toLowerCase() !== 'unknown artist' && cleanArtist.toLowerCase() !== 'unknown';
+    const startsWithArtist = hasArtist && (
+      cleanTitle.toLowerCase().startsWith(cleanArtist.toLowerCase() + ' - ') ||
+      cleanTitle.toLowerCase().startsWith(cleanArtist.toLowerCase() + ' -') ||
+      cleanTitle.toLowerCase().startsWith(cleanArtist.toLowerCase() + '_-_')
+    );
+    outFilename = (hasArtist && !startsWithArtist)
+      ? `${cleanArtist} - ${cleanTitle}.${ext}`
+      : `${cleanTitle}.${ext}`;
+  }
   const outPath = path.join(downloadsDir, outFilename);
 
   const renderTempName = 'render_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.wav';

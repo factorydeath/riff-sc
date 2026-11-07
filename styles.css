@@ -3878,7 +3878,8 @@ body.perf #sleep-timer-status.active::before {
 
 #download-modal.batch-mode #download-trim-section,
 #download-modal.batch-mode #download-effects-section,
-#download-modal.batch-mode #download-preset-section {
+#download-modal.batch-mode #download-preset-section,
+#download-modal.batch-mode #download-title-section {
   display: none;
 }
 
@@ -8262,4 +8263,115 @@ body.multi-select-on .track-row.selectable .track-row-actions {
 @keyframes relatedSkeleton {
   0% { background-position: 120% 0; }
   100% { background-position: -80% 0; }
+}
+
+.download-title-section {
+  margin-top: 14px;
+}
+
+.download-title-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.download-title-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--md-sys-color-surface-container-high);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 10px 36px 10px 14px;
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+  outline: none;
+  font-family: inherit;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.download-title-input:hover {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.download-title-input:focus {
+  background: var(--md-sys-color-surface-container-highest);
+  border-color: var(--md-sys-color-primary);
+}
+
+.download-title-reset-btn {
+  position: absolute;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-outline);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  padding: 0;
+}
+
+.download-title-reset-btn:hover {
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+
+.download-title-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  gap: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
+}
+
+.download-artist-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  user-select: none;
+  font-size: calc(12px * var(--font-scale, 1));
+}
+
+.download-artist-toggle-label input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--md-sys-color-primary);
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.download-filename-preview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--md-sys-color-outline);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 65%;
+  justify-content: flex-end;
+}
+
+.download-filename-preview-label {
+  font-weight: 500;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.download-filename-preview-text {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

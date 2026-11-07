@@ -11768,12 +11768,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         const info = getDownloadPresetInfo(item.id);
         if (descEl) descEl.textContent = info.desc || info.name;
         updateDownloadBtnLabel();
+        updateDownloadFilenamePreview();
       });
       container.appendChild(chip);
     });
 
     const curInfo = getDownloadPresetInfo(selectedDownloadPreset);
     if (descEl) descEl.textContent = curInfo.desc || curInfo.name;
+  }
+
+  function updateDownloadFilenamePreview() {
+    const previewEl = document.getElementById('download-filename-preview-text');
+    const hintEl = document.getElementById('download-title-hint');
+    const titleInput = document.getElementById('download-custom-title');
+    const includeArtistToggle = document.getElementById('download-include-artist-toggle');
+    if (!previewEl || !trackToDownload) return;
+
+    const origTitle = (trackToDownload.title || '').trim();
+    const userVal = titleInput ? titleInput.value : '';
+    const trimmedVal = userVal.trim();
+    const effectiveTitle = trimmedVal || origTitle || 'untitled';
+
+    if (hintEl) {
+      if (!trimmedVal || trimmedVal === origTitle) {
+        hintEl.textContent = 'Default title';
+      } else {
+        hintEl.textContent = 'Custom title';
+      }
+    }
+
+    const presetInfo = getDownloadPresetInfo(selectedDownloadPreset);
+    const presetTag = (presetInfo && presetInfo.id !== 'none' && presetInfo.id !== 'p_default') ? presetInfo.name : '';
+
+    const cleanArtist = (trackToDownload.artist || '').trim();
+    const hasArtist = cleanArtist && cleanArtist.toLowerCase() !== 'unknown artist' && cleanArtist.toLowerCase() !== 'unknown';
+    const includeArtist = includeArtistToggle ? includeArtistToggle.checked : true;
+
+    let baseName = effectiveTitle;
+    if (includeArtist && hasArtist) {
+      const startsWithArtist = (
+        baseName.toLowerCase().startsWith(cleanArtist.toLowerCase() + ' - ') ||
+        baseName.toLowerCase().startsWith(cleanArtist.toLowerCase() + ' -')
+      );
+      if (!startsWithArtist) {
+        baseName = `${cleanArtist} - ${baseName}`;
+      }
+    }
+
+    const finalName = presetTag ? `${baseName} (${presetTag})` : baseName;
+    const ext = selectedFormat || 'mp3';
+    previewEl.textContent = `${finalName}.${ext}`;
+    previewEl.title = `${finalName}.${ext}`;
   }
 
   function updateDownloadBtnLabel() {
@@ -11849,6 +11894,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     selectedDownloadPreset = 'none';
     renderDownloadPresetChips();
+    const titleInput = document.getElementById('download-custom-title');
+    if (titleInput) {
+      titleInput.value = track.title || '';
+    }
+    const includeArtistToggle = document.getElementById('download-include-artist-toggle');
+    if (includeArtistToggle) {
+      const savedInclude = localStorage.getItem('riff_download_include_artist');
+      includeArtistToggle.checked = savedInclude !== null ? savedInclude === 'true' : true;
+    }
+    updateDownloadFilenamePreview();
     updateDownloadBtnLabel();
     updateLosslessQualityState();
     updateDownloadCaptionPath();
@@ -11902,6 +11957,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     updateDownloadBtnLabel();
     updateLosslessQualityState();
+    updateDownloadFilenamePreview();
   }
 
   document.querySelectorAll('.format-chip').forEach(chip => {
@@ -11919,6 +11975,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       selectedQuality = chip.dataset.quality;
     });
   });
+
+  const customTitleInput = document.getElementById('download-custom-title');
+  if (customTitleInput) {
+    customTitleInput.addEventListener('input', () => {
+      updateDownloadFilenamePreview();
+    });
+  }
+
+  const btnResetTitle = document.getElementById('btn-reset-download-title');
+  if (btnResetTitle) {
+    btnResetTitle.addEventListener('click', () => {
+      if (customTitleInput && trackToDownload) {
+        customTitleInput.value = trackToDownload.title || '';
+        updateDownloadFilenamePreview();
+        customTitleInput.focus();
+      }
+    });
+  }
+
+  const includeArtistToggle = document.getElementById('download-include-artist-toggle');
+  if (includeArtistToggle) {
+    includeArtistToggle.addEventListener('change', () => {
+      localStorage.setItem('riff_download_include_artist', includeArtistToggle.checked);
+      updateDownloadFilenamePreview();
+    });
+  }
 
   let downloadAbort = null;
   let downloadBatchToken = 0;
@@ -12230,8 +12312,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (downloadAbort?.signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
-        const titleForFile = presetTag ? `${t.title || 'untitled'} (${presetTag})` : (t.title || 'untitled');
-        const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(titleForFile)}&artist=${encodeURIComponent(t.artist || 'unknown artist')}&format=${selectedFormat}&quality=${selectedQuality}${tempoParam}`;
+        const customTitleInput = document.getElementById('download-custom-title');
+        const userTitle = customTitleInput ? customTitleInput.value.trim() : '';
+        const effectiveTitle = userTitle || t.title || 'untitled';
+
+        const includeArtistToggle = document.getElementById('download-include-artist-toggle');
+        const includeArtist = includeArtistToggle ? includeArtistToggle.checked : true;
+
+        const cleanArtist = (t.artist || '').trim();
+        const hasArtist = cleanArtist && cleanArtist.toLowerCase() !== 'unknown artist' && cleanArtist.toLowerCase() !== 'unknown';
+
+        let baseFileName = effectiveTitle;
+        if (includeArtist && hasArtist) {
+          const startsWithArtist = (
+            baseFileName.toLowerCase().startsWith(cleanArtist.toLowerCase() + ' - ') ||
+            baseFileName.toLowerCase().startsWith(cleanArtist.toLowerCase() + ' -')
+          );
+          if (!startsWithArtist) {
+            baseFileName = `${cleanArtist} - ${baseFileName}`;
+          }
+        }
+
+        const titleForFile = presetTag ? `${effectiveTitle} (${presetTag})` : effectiveTitle;
+        const filenameForFile = presetTag ? `${baseFileName} (${presetTag})` : baseFileName;
+
+        const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(titleForFile)}&artist=${encodeURIComponent(t.artist || 'unknown artist')}&filename=${encodeURIComponent(filenameForFile)}&format=${selectedFormat}&quality=${selectedQuality}${tempoParam}`;
         const resEncode = await fetch(encodeUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'audio/wav' },
