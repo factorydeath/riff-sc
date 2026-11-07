@@ -848,13 +848,6 @@
                 </svg>
                 <span>Integrations</span>
               </button>
-              <button class="settings-nav-btn" data-cat="account">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="8" r="4"/>
-                  <path d="M4 21c0-4.2 3.6-6.5 8-6.5s8 2.3 8 6.5"/>
-                </svg>
-                <span>Account</span>
-              </button>
               <button class="settings-nav-btn" data-cat="storage">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="22" x2="2" y1="12" y2="12"/>
@@ -1635,17 +1628,9 @@
 
 
           <div class="settings-section" id="settings-section-advanced" data-cat="advanced">
-            <button class="adv-section-header" id="btn-toggle-adv-section" type="button">
-              <span class="settings-section-title" style="margin-bottom: 0;">Advanced</span>
-              <svg class="adv-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
-
-            <div class="adv-collapsible-wrapper" id="adv-collapsible-wrapper">
-              <div class="adv-collapsible-inner">
-                <div class="adv-items-list">
-                  <div class="m3-group">
+            <span class="settings-section-title">Advanced</span>
+            <div class="adv-items-list">
+              <div class="m3-group">
                   <div class="setting-item">
                     <div class="setting-item-top" style="align-items: center;">
                       <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -1816,9 +1801,7 @@
                     </div>
                   </div>
                 </div>
-                </div>
               </div>
-            </div>
           </div>
 
           <div class="settings-section" id="settings-section-about" data-cat="about">
@@ -2625,11 +2608,26 @@
       </div>
 
       <div class="download-track-preview">
-        <img class="download-preview-thumb" id="download-preview-thumb" src="" alt="" onerror="this.style.display='none'">
-        <div class="download-preview-fallback" id="download-preview-fallback">🎵</div>
+        <div class="download-preview-thumb-wrap" id="download-thumb-wrap" title="Click to change cover image" tabindex="0" role="button">
+          <img class="download-preview-thumb" id="download-preview-thumb" src="" alt="" onerror="this.style.display='none'">
+          <div class="download-preview-fallback" id="download-preview-fallback">🎵</div>
+          <div class="download-thumb-badge" title="Change cover">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          </div>
+        </div>
         <div class="download-preview-info">
           <span class="download-preview-title" id="download-preview-title">Track title</span>
           <span class="download-preview-artist" id="download-preview-artist">Artist</span>
+          <div class="download-cover-actions">
+            <button type="button" class="download-cover-action-btn" id="btn-change-download-cover">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              <span>Change image</span>
+            </button>
+            <button type="button" class="download-cover-action-btn hidden" id="btn-reset-download-cover">
+              <span>Reset cover</span>
+            </button>
+            <input type="file" id="download-cover-file-input" accept="image/*" style="display:none;">
+          </div>
         </div>
       </div>
       <div class="download-section download-title-section" id="download-title-section">
