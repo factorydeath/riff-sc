@@ -9,8 +9,270 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500;700&display=swap"></noscript>
   <link rel="stylesheet" href="styles.css">
+  <script>
+  // Early theme application - runs synchronously before first paint
+  // to prevent flash of default theme (FODT)
+  (function() {
+    try {
+      var mode = localStorage.getItem('riff_theme_mode') || 'dark';
+      var accent = localStorage.getItem('riff_theme_accent') || '#6750A4';
+      var intensity = parseInt(localStorage.getItem('riff_theme_intensity') || '0');
+      var brightness = parseInt(localStorage.getItem('riff_theme_brightness') || '50');
+      var paletteStyle = localStorage.getItem('riff_palette_style') || 'classic';
+      var uiAlpha = localStorage.getItem('riff_ui_alpha') || '100';
+      var textAlpha = localStorage.getItem('riff_text_alpha') || '100';
+      var effectiveMode = (mode === 'auto') ? 'dark' : mode;
+
+      function hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map(function(c) { return c + c; }).join('');
+        var num = parseInt(hex, 16);
+        return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+      }
+      function rgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) { h = s = 0; }
+        else {
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+          }
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+      }
+      function hslToHex(h, s, l) {
+        s /= 100; l /= 100;
+        var a = s * Math.min(l, 1 - l);
+        var f = function(n) { var k = (n + h / 30) % 12; return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); };
+        return '#' + [f(0), f(8), f(4)].map(function(x) { return Math.round(x * 255).toString(16).padStart(2, '0'); }).join('');
+      }
+      function relLuminance(hex) {
+        var rgb = hexToRgb(hex);
+        var a = [rgb.r, rgb.g, rgb.b].map(function(v) {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        });
+        return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+      }
+      function contrastRatio(l1, l2) {
+        var lighter = Math.max(l1, l2);
+        var darker = Math.min(l1, l2);
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+      function computeButtonColors(accentHex, mode) {
+        var rgb = hexToRgb(accentHex);
+        var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        var s = hsl.s;
+        var dark = mode === 'dark';
+        var l = dark ? Math.min(74, Math.max(52, hsl.l)) : Math.min(46, Math.max(32, hsl.l));
+        var lumAt = function(L) { return relLuminance(hslToHex(hsl.h, s, L)); };
+        while (lumAt(l) > 0.42 && l > 26) l -= 1;
+        var mid = lumAt(l);
+        if (mid > 0.18 && mid < 0.23) {
+          while (lumAt(l) > 0.18 && l > 22) l -= 1;
+        }
+        var bg = hslToHex(hsl.h, s, l);
+        var bgLum = relLuminance(bg);
+        var darkText = '#1B1B1F';
+        var fg = contrastRatio(bgLum, 1) >= contrastRatio(bgLum, relLuminance(darkText)) ? '#FFFFFF' : darkText;
+        var hover = hslToHex(hsl.h, s, Math.max(0, Math.min(100, l + (dark ? 5 : -5))));
+        return { bg: bg, fg: fg, hover: hover };
+      }
+
+      var PALETTE_STYLES = {
+        classic: { secHueShift: 0, tertHueShift: 0, priSatScale: 1.0, surfSatScale: 1.0, contSatScale: 1.0 },
+        'tonal-spot': { secHueShift: 0, tertHueShift: 60, priSatScale: 1.0, surfSatScale: 0.8, contSatScale: 0.9 },
+        expressive: { secHueShift: 60, tertHueShift: 120, priSatScale: 1.25, surfSatScale: 1.5, contSatScale: 1.3 },
+        vibrant: { secHueShift: 0, tertHueShift: 60, priSatScale: 1.4, surfSatScale: 1.2, contSatScale: 1.4 },
+        neutral: { secHueShift: 0, tertHueShift: 0, priSatScale: 0.35, surfSatScale: 0.2, contSatScale: 0.25 }
+      };
+      var tint = function(hex, v) { return 'color-mix(in srgb, ' + hex + ' var(' + v + '), transparent)'; };
+      var SURFACE_TOKENS = ['--md-sys-color-background','--md-sys-color-surface','--md-sys-color-surface-dim',
+        '--md-sys-color-surface-bright','--md-sys-color-surface-container-lowest','--md-sys-color-surface-container-low',
+        '--md-sys-color-surface-container','--md-sys-color-surface-container-high','--md-sys-color-surface-container-highest'];
+      var TEXT_TOKENS = ['--md-sys-color-on-surface','--md-sys-color-on-surface-variant'];
+      var surfSet = {}; SURFACE_TOKENS.forEach(function(t) { surfSet[t] = true; });
+      var textSet = {}; TEXT_TOKENS.forEach(function(t) { textSet[t] = true; });
+
+      var root = document.documentElement;
+      root.style.setProperty('--ui-alpha', uiAlpha + '%');
+      root.style.setProperty('--text-alpha', textAlpha + '%');
+
+      function setToken(prop, val) {
+        if (surfSet[prop]) { root.style.setProperty(prop, tint(val, '--ui-alpha')); root.style.setProperty(prop + '-solid', val); }
+        else if (textSet[prop]) { root.style.setProperty(prop, tint(val, '--text-alpha')); root.style.setProperty(prop + '-solid', val); }
+        else { root.style.setProperty(prop, val); }
+      }
+      function setSurfaceToken(prop, val) { root.style.setProperty(prop, tint(val, '--ui-alpha')); root.style.setProperty(prop + '-solid', val); }
+
+      var rgb = hexToRgb(accent);
+      var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      var h = hsl.h;
+      var intensityFactor = (typeof intensity === 'number' ? intensity : 100) / 100;
+      var style = PALETTE_STYLES[paletteStyle] || PALETTE_STYLES.classic;
+      var hSec = (h + style.secHueShift) % 360;
+      var hTert = (h + style.tertHueShift) % 360;
+      var isMonochrome = intensityFactor < 0.08 || (paletteStyle === 'neutral' && intensityFactor < 0.05);
+      var br = (typeof brightness === 'number' ? brightness : 50) / 100;
+
+      var finalPrimary = accent;
+
+      if (effectiveMode === 'light') {
+        setToken('--md-sys-color-error-container', '#F9DEDC');
+        setToken('--md-sys-color-on-error-container', '#410E0B');
+        var LB = function(v) { return Math.max(0, Math.min(100, Math.round(v + (br - 0.5) * 24))); };
+        if (isMonochrome) {
+          finalPrimary = '#111111';
+          setToken('--md-sys-color-primary', '#111111'); setToken('--md-sys-color-on-primary', '#FFFFFF');
+          setSurfaceToken('--md-sys-color-primary-container', hslToHex(0, 0, LB(90)));
+          setToken('--md-sys-color-on-primary-container', '#111111'); setToken('--md-sys-color-secondary', '#444444');
+          setSurfaceToken('--md-sys-color-secondary-container', hslToHex(0, 0, LB(90)));
+          setToken('--md-sys-color-on-secondary-container', '#111111'); setToken('--md-sys-color-tertiary', '#444444');
+          setSurfaceToken('--md-sys-color-tertiary-container', hslToHex(0, 0, LB(90)));
+          setToken('--md-sys-color-background', hslToHex(0, 0, LB(99))); setToken('--md-sys-color-surface', hslToHex(0, 0, LB(98)));
+          setToken('--md-sys-color-surface-dim', hslToHex(0, 0, LB(87))); setToken('--md-sys-color-surface-bright', hslToHex(0, 0, LB(98)));
+          setToken('--md-sys-color-surface-container-lowest', hslToHex(0, 0, LB(100)));
+          setToken('--md-sys-color-surface-container-low', hslToHex(0, 0, LB(96)));
+          setToken('--md-sys-color-surface-container', hslToHex(0, 0, LB(94)));
+          setToken('--md-sys-color-surface-container-high', hslToHex(0, 0, LB(92)));
+          setToken('--md-sys-color-surface-container-highest', hslToHex(0, 0, LB(90)));
+          setToken('--md-sys-color-on-surface', '#111111'); setToken('--md-sys-color-on-surface-variant', '#444444');
+          setToken('--md-sys-color-outline', '#777777'); setSurfaceToken('--md-sys-color-outline-variant', '#CFCFCF');
+          setToken('--md-sys-color-error', '#777777'); setToken('--md-sys-color-on-error', '#FFFFFF');
+        } else {
+          var sat = Math.min(100, Math.round(48 * intensityFactor * style.priSatScale));
+          var satHi = Math.min(100, Math.round(80 * intensityFactor * style.contSatScale));
+          var satMed = Math.min(100, Math.round(55 * intensityFactor * style.priSatScale));
+          var satLow = Math.min(100, Math.round(30 * intensityFactor * style.contSatScale));
+          var satLow2 = Math.min(100, Math.round(20 * intensityFactor * style.contSatScale));
+          var surfFactor = intensityFactor * style.surfSatScale;
+          finalPrimary = hslToHex(h, sat, 40);
+          setToken('--md-sys-color-primary', finalPrimary); setToken('--md-sys-color-on-primary', '#FEFBFF');
+          setToken('--md-sys-color-primary-container', hslToHex(h, satHi, LB(90)));
+          setToken('--md-sys-color-on-primary-container', hslToHex(h, satMed, 18));
+          setToken('--md-sys-color-secondary', hslToHex(hSec, satLow, 45));
+          setToken('--md-sys-color-secondary-container', hslToHex(hSec, satLow, LB(90)));
+          setToken('--md-sys-color-on-secondary-container', hslToHex(hSec, satLow2, 15));
+          setToken('--md-sys-color-tertiary', hslToHex(hTert, satLow, 45));
+          setToken('--md-sys-color-tertiary-container', hslToHex(hTert, satLow, LB(90)));
+          setToken('--md-sys-color-background', hslToHex(h, Math.round(5 * surfFactor), LB(99)));
+          setToken('--md-sys-color-surface', hslToHex(h, Math.round(6 * surfFactor), LB(98)));
+          setToken('--md-sys-color-surface-dim', hslToHex(h, Math.round(5 * surfFactor), LB(87)));
+          setToken('--md-sys-color-surface-bright', hslToHex(h, Math.round(6 * surfFactor), LB(98)));
+          setToken('--md-sys-color-surface-container-lowest', hslToHex(h, Math.round(4 * surfFactor), LB(100)));
+          setToken('--md-sys-color-surface-container-low', hslToHex(h, Math.round(5 * surfFactor), LB(96)));
+          setToken('--md-sys-color-surface-container', hslToHex(h, Math.round(6 * surfFactor), LB(94)));
+          setToken('--md-sys-color-surface-container-high', hslToHex(h, Math.round(5 * surfFactor), LB(92)));
+          setToken('--md-sys-color-surface-container-highest', hslToHex(h, Math.round(5 * surfFactor), LB(90)));
+          setToken('--md-sys-color-on-surface', '#1C1B1F'); setToken('--md-sys-color-on-surface-variant', '#49454F');
+          setToken('--md-sys-color-outline', '#79747E'); setToken('--md-sys-color-outline-variant', '#CAC4D0');
+        }
+      } else {
+        setToken('--md-sys-color-error-container', '#8C1D18'); setToken('--md-sys-color-on-error-container', '#F9DEDC');
+        if (isMonochrome) {
+          finalPrimary = '#FFFFFF';
+          var B = function(v) { return Math.max(0, Math.min(100, Math.round(v * (br * 2)))); };
+          setToken('--md-sys-color-primary', '#FFFFFF'); setToken('--md-sys-color-on-primary', '#121212');
+          setSurfaceToken('--md-sys-color-primary-container', hslToHex(0, 0, B(24)));
+          setToken('--md-sys-color-on-primary-container', '#FFFFFF'); setToken('--md-sys-color-secondary', '#D0D0D0');
+          setSurfaceToken('--md-sys-color-secondary-container', hslToHex(0, 0, B(24)));
+          setToken('--md-sys-color-on-secondary-container', '#FFFFFF'); setToken('--md-sys-color-tertiary', '#D0D0D0');
+          setSurfaceToken('--md-sys-color-tertiary-container', hslToHex(0, 0, B(24)));
+          setToken('--md-sys-color-background', hslToHex(0, 0, B(7))); setToken('--md-sys-color-surface', hslToHex(0, 0, B(7)));
+          setToken('--md-sys-color-surface-dim', hslToHex(0, 0, B(7))); setToken('--md-sys-color-surface-bright', hslToHex(0, 0, B(19)));
+          setToken('--md-sys-color-surface-container-lowest', hslToHex(0, 0, B(5)));
+          setToken('--md-sys-color-surface-container-low', hslToHex(0, 0, B(10)));
+          setToken('--md-sys-color-surface-container', hslToHex(0, 0, B(13)));
+          setToken('--md-sys-color-surface-container-high', hslToHex(0, 0, B(16)));
+          setToken('--md-sys-color-surface-container-highest', hslToHex(0, 0, B(20)));
+          setToken('--md-sys-color-on-surface', '#FFFFFF'); setToken('--md-sys-color-on-surface-variant', '#CFCFCF');
+          setToken('--md-sys-color-outline', '#8A8A8A'); setSurfaceToken('--md-sys-color-outline-variant', '#3A3A3A');
+          setToken('--md-sys-color-error', '#8A8A8A'); setToken('--md-sys-color-on-error', '#121212');
+        } else {
+          var sat = Math.min(100, Math.round(60 * intensityFactor * style.priSatScale));
+          var satHi = Math.min(100, Math.round(60 * intensityFactor * style.contSatScale));
+          var satMed = Math.min(100, Math.round(50 * intensityFactor * style.priSatScale));
+          var satLow = Math.min(100, Math.round(15 * intensityFactor * style.contSatScale));
+          var satLow2 = Math.min(100, Math.round(30 * intensityFactor * style.contSatScale));
+          var surfFactor = intensityFactor * style.surfSatScale;
+          finalPrimary = hslToHex(h, sat, 75);
+          var priRgb = hexToRgb(finalPrimary);
+          setToken('--md-sys-color-primary', finalPrimary); setToken('--md-sys-color-on-primary', hslToHex(h, satMed, 20));
+          setToken('--md-sys-color-primary-container', 'rgba(' + priRgb.r + ', ' + priRgb.g + ', ' + priRgb.b + ', 0.18)');
+          setToken('--md-sys-color-on-primary-container', finalPrimary);
+          setToken('--md-sys-color-secondary', hslToHex(hSec, satLow2, 75));
+          setToken('--md-sys-color-secondary-container', hslToHex(hSec, satLow, 22));
+          setToken('--md-sys-color-on-secondary-container', hslToHex(hSec, satLow2, 85));
+          setToken('--md-sys-color-tertiary', hslToHex(hTert, satLow2, 75));
+          setToken('--md-sys-color-tertiary-container', hslToHex(hTert, satLow, 22));
+          var B = function(v) { return Math.max(0, Math.min(100, Math.round(v * (br * 2)))); };
+          setToken('--md-sys-color-background', hslToHex(h, Math.round(5 * surfFactor), B(7)));
+          setToken('--md-sys-color-surface', hslToHex(h, Math.round(6 * surfFactor), B(8)));
+          setToken('--md-sys-color-surface-dim', hslToHex(h, Math.round(5 * surfFactor), B(7)));
+          setToken('--md-sys-color-surface-bright', hslToHex(h, Math.round(4 * surfFactor), B(24)));
+          setToken('--md-sys-color-surface-container-lowest', hslToHex(h, Math.round(5 * surfFactor), B(5)));
+          setToken('--md-sys-color-surface-container-low', hslToHex(h, Math.round(5 * surfFactor), B(10)));
+          setToken('--md-sys-color-surface-container', hslToHex(h, Math.round(6 * surfFactor), B(13)));
+          setToken('--md-sys-color-surface-container-high', hslToHex(h, Math.round(5 * surfFactor), B(16)));
+          setToken('--md-sys-color-surface-container-highest', hslToHex(h, Math.round(5 * surfFactor), B(20)));
+          setToken('--md-sys-color-on-surface', '#e2e2e9'); setToken('--md-sys-color-on-surface-variant', '#c4c6d0');
+          setToken('--md-sys-color-outline', '#8e9099'); setToken('--md-sys-color-outline-variant', '#282a33');
+        }
+      }
+
+      // Button primary colors
+      var btnColors = (intensity < 8)
+        ? (effectiveMode === 'light' ? { bg: '#111111', fg: '#FFFFFF', hover: '#333333' } : { bg: '#FFFFFF', fg: '#121212', hover: '#E6E6E6' })
+        : computeButtonColors(finalPrimary, effectiveMode);
+      root.style.setProperty('--btn-primary-bg', btnColors.bg);
+      root.style.setProperty('--btn-primary-fg', btnColors.fg);
+      root.style.setProperty('--btn-primary-hover', btnColors.hover);
+
+      // Corner radius
+      var savedRadius = localStorage.getItem('riff_corner_radius') || '16';
+      root.style.setProperty('--md-shape-corner-l', savedRadius + 'px');
+      root.style.setProperty('--md-shape-corner-m', Math.max(0, parseInt(savedRadius) - 4) + 'px');
+
+      // Font scale
+      var savedFontScale = localStorage.getItem('riff_font_scale') || '100';
+      var fontVal = parseInt(savedFontScale, 10) || 100;
+      root.style.setProperty('--font-scale', ((fontVal / 100) * 0.95 * 1.25).toString());
+
+      // Font family
+      var savedFont = localStorage.getItem('riff_font') || 'google';
+      if (savedFont === 'system') {
+        root.style.setProperty('--font-family', 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif');
+      }
+
+      // Custom themes & custom CSS
+      var customThemeCss = localStorage.getItem('riff_active_theme_css') || '';
+      var userCustomCss = localStorage.getItem('riff_custom_css') || '';
+      if (customThemeCss.trim() || userCustomCss.trim()) {
+        var earlyStyle = document.createElement('style');
+        earlyStyle.dataset.riffCustom = 'early';
+        earlyStyle.textContent = (customThemeCss ? customThemeCss + '\n' : '') + userCustomCss;
+        document.head.appendChild(earlyStyle);
+      }
+
+      window.__riffEarlyThemeApplied = true;
+      window.__riffEarlyThemeMode = effectiveMode;
+      window.__riffEarlyThemeIntensity = intensity;
+    } catch(e) {}
+  })();
+  </script>
 </head>
 <body class="no-nav-transition">
+  <script>
+    if (window.__riffEarlyThemeMode) {
+      document.body.classList.add(window.__riffEarlyThemeMode === 'light' ? 'theme-light' : 'theme-dark');
+      if (window.__riffEarlyThemeIntensity < 8) document.body.classList.add('intensity-zero');
+    }
+  </script>
   <div id="fx-root"></div>
 
   <div class="m3-organic-bg">
@@ -1585,7 +1847,7 @@
             <span class="settings-credits-text">
               Riff SC — dedicated SoundCloud client
             </span>
-            <span class="settings-version-tag">v42.3.1</span>
+            <span class="settings-version-tag">v42.3.2</span>
           </div>
             </div>
           </div>

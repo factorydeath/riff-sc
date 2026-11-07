@@ -115,6 +115,17 @@ html {
   transition: background-color var(--transition-emphasized), color var(--transition-emphasized);
 }
 
+/* Suppress theme transition on initial load to prevent flash */
+body.no-nav-transition,
+body.no-nav-transition *,
+body.no-nav-transition *::before,
+body.no-nav-transition *::after {
+  transition: none !important;
+}
+html:has(body.no-nav-transition) {
+  transition: none !important;
+}
+
 body {
   background: var(--md-sys-color-background) !important;
   color: var(--md-sys-color-on-surface);

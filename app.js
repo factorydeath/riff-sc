@@ -10511,13 +10511,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function applyCustomStyles() {
     document.querySelectorAll('style[data-riff-custom]').forEach((n) => n.remove());
-    customThemes.filter((t) => t.enabled).forEach((t) => {
+    const enabledThemes = customThemes.filter((t) => t.enabled);
+    enabledThemes.forEach((t) => {
       const s = document.createElement('style');
       s.dataset.riffCustom = 'theme';
       s.dataset.themeId = t.id;
       s.textContent = t.css;
       document.head.appendChild(s);
     });
+    try {
+      const combinedThemeCss = enabledThemes.map(t => t.css).join('\n');
+      if (combinedThemeCss) localStorage.setItem('riff_active_theme_css', combinedThemeCss);
+      else localStorage.removeItem('riff_active_theme_css');
+    } catch(e) {}
     const userCss = localStorage.getItem('riff_custom_css') || '';
     if (userCss.trim()) {
       const s = document.createElement('style');
@@ -10532,6 +10538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userCss = localStorage.getItem('riff_custom_css') || '';
     if (userCss.trim()) localStorage.setItem('riff_custom_css_backup', userCss);
     localStorage.removeItem('riff_custom_css');
+    localStorage.removeItem('riff_active_theme_css');
     customThemes.forEach((t) => { t.enabled = false; });
     if (window.electronAPI && window.electronAPI.disableAllThemes) window.electronAPI.disableAllThemes();
     if (typeof cssEditorInstance !== 'undefined' && cssEditorInstance) cssEditorInstance.setValue('');
@@ -10849,7 +10856,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const current = localStorage.getItem('riff_custom_css') || '';
     if (current.trim()) localStorage.setItem('riff_custom_css_backup', current);
     if (cssEditorInstance) cssEditorInstance.setValue('');
-    else { localStorage.removeItem('riff_custom_css'); applyCustomStyles(); }
+    else { localStorage.removeItem('riff_custom_css');
+    localStorage.removeItem('riff_active_theme_css'); applyCustomStyles(); }
   });
   const btnCssRestore = document.getElementById('btn-css-restore');
   if (btnCssRestore) btnCssRestore.addEventListener('click', () => {
