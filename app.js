@@ -11827,12 +11827,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const count = downloadBatch.tracks.length;
       el.downloadBtnText.textContent = `Download ${count} track${count === 1 ? '' : 's'}`;
     } else {
-      const info = getDownloadPresetInfo(selectedDownloadPreset);
-      if (info && info.id !== 'none' && info.id !== 'p_default') {
-        el.downloadBtnText.textContent = `Download ${selectedFormat.toUpperCase()} (${info.name})`;
-      } else {
-        el.downloadBtnText.textContent = `Download ${selectedFormat.toUpperCase()}`;
-      }
+      el.downloadBtnText.textContent = `Download ${(selectedFormat || 'mp3').toUpperCase()}`;
     }
   }
 
