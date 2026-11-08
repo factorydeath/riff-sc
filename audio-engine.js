@@ -151,7 +151,7 @@
           this.hqAir.frequency.value = 9000;
 
           this.hqSaturation = this.ctx.createWaveShaper();
-          this.hqSaturation.oversample = '4x';
+          this.hqSaturation.oversample = '2x';
 
           this.hqLimiter = this.ctx.createDynamicsCompressor();
           this.hqLimiter.threshold.value = -1;

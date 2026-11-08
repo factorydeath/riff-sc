@@ -461,6 +461,25 @@
         </div>
 
         <div class="rail-drawer-section" id="drawer-section-presets">
+          <div class="presets-panel-toolbar">
+            <div class="presets-active-banner" id="presets-active-banner">
+              <span class="presets-banner-dot"></span>
+              <span class="presets-banner-text" id="presets-active-name">Clean Sound</span>
+            </div>
+            <div class="presets-toolbar-actions">
+              <button class="btn-presets-toolbar" id="btn-reset-preset" title="Reset all DSP effects to clean sound">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+          <div class="presets-filter-bar" id="presets-filter-bar">
+            <button class="preset-filter-chip active" data-filter="all">All</button>
+            <button class="preset-filter-chip" data-filter="bass">Bass</button>
+            <button class="preset-filter-chip" data-filter="pitch">Pitch & Speed</button>
+            <button class="preset-filter-chip" data-filter="space">Spatial & FX</button>
+            <button class="preset-filter-chip" data-filter="custom">Custom</button>
+          </div>
           <div class="presets-chips-container" id="presets-container"></div>
         </div>
 

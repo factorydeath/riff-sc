@@ -298,12 +298,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const defaultPresets = [
-    { id: 'p_default', name: 'default', settings: { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
-    { id: 'p_speedup', name: 'speed up (orig pitch)', settings: { speed: 1.35, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
-    { id: 'p_speedup_pitch', name: 'speed up (tape pitch)', settings: { speed: 1.0, speedPitch: 1.30, pitch: 0, reverb: 0, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
-    { id: 'p_slowed', name: 'slowed + reverb', settings: { speed: 1.0, speedPitch: 0.82, pitch: 0, reverb: 65, distortion: 0, volume: 1.0, echo: 15, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
-    { id: 'p_nightcore', name: 'nightcore', settings: { speed: 1.0, speedPitch: 1.25, pitch: 0, reverb: 20, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
-    { id: 'p_distortion', name: 'distortion hard', settings: { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 75, volume: 1.25, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } }
+    { id: 'p_default', name: 'Clean Default', settings: { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
+    { id: 'p_bass_boost', name: 'Bass Boost (808)', settings: { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 0, volume: 1.15, echo: 0, eq: { low: 8.5, mid: -1.0, high: 2.0 }, eqBands: [9, 8, 5, 2, 0, -1, 0, 1, 2, 3] } },
+    { id: 'p_speedup', name: 'Speed Up (Orig Pitch)', settings: { speed: 1.35, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
+    { id: 'p_speedup_pitch', name: 'Speed Up (Tape Pitch)', settings: { speed: 1.0, speedPitch: 1.30, pitch: 0, reverb: 0, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
+    { id: 'p_slowed', name: 'Slowed + Reverb', settings: { speed: 1.0, speedPitch: 0.82, pitch: 0, reverb: 65, distortion: 0, volume: 1.0, echo: 15, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
+    { id: 'p_nightcore', name: 'Nightcore', settings: { speed: 1.0, speedPitch: 1.25, pitch: 0, reverb: 20, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } },
+    { id: 'p_vaporwave', name: 'Vaporwave (Chopped)', settings: { speed: 1.0, speedPitch: 0.80, pitch: 0, reverb: 55, distortion: 0, volume: 1.05, echo: 22, eq: { low: 4.0, mid: -2.0, high: 1.5 }, eqBands: [4, 3, 2, 0, -2, -1, 1, 2, 1, 0] } },
+    { id: 'p_phonk', name: 'Drift Phonk (808)', settings: { speed: 1.04, speedPitch: 1.0, pitch: 0, reverb: 18, distortion: 35, volume: 1.15, echo: 0, eq: { low: 7.5, mid: 2.0, high: 3.5 }, eqBands: [8, 7, 4, 1, 1, 2, 3, 4, 3, 2] } },
+    { id: 'p_lofi', name: 'Lo-Fi Vinyl (Tape)', settings: { speed: 0.96, speedPitch: 0.96, pitch: 0, reverb: 30, distortion: 12, volume: 1.05, echo: 10, eq: { low: 3.0, mid: 4.5, high: -7.0 }, eqBands: [3, 4, 3, 2, 1, -2, -4, -6, -8, -10] } },
+    { id: 'p_spatialize', name: '8D Spatializer (Hall)', settings: { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 72, distortion: 0, volume: 1.08, echo: 28, eq: { low: 2.5, mid: 1.0, high: 4.0 }, eqBands: [2, 2, 1, 0, 1, 2, 3, 4, 5, 4] } },
+    { id: 'p_crystal', name: 'Crystal Clear (Air)', settings: { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 15, distortion: 0, volume: 1.02, echo: 0, eq: { low: -2.0, mid: 1.5, high: 7.5 }, eqBands: [-3, -2, 0, 1, 2, 3, 5, 7, 8, 9] } },
+    { id: 'p_distortion', name: 'Distortion Hard', settings: { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 75, volume: 1.25, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] } }
   ];
 
   const defaultVfx = {
@@ -1991,19 +1997,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   function normalizeEnabled() { return localStorage.getItem('riff_audio_normalize') === '1'; }
   function resetLevelWatcher() { levelAvgDb = -120; if (audioEngine && audioEngine.setNormalizeGainDb) audioEngine.setNormalizeGainDb(0); }
   setInterval(() => {
+    if (!normalizeEnabled()) {
+      if (levelAvgDb > -120) resetLevelWatcher();
+      return;
+    }
     const audio = el.nativeAudio;
     if (!audioEngine || !audioEngine.getLevelDb || !audio || audio.paused || !state.isPlaying) return;
     const db = audioEngine.getLevelDb();
-    if (normalizeEnabled()) {
-      if (db > -50) {
-        levelAvgDb = levelAvgDb <= -120 ? db : levelAvgDb + (db - levelAvgDb) * 0.05;
-        const gainDb = Math.max(-9, Math.min(9, -17 - levelAvgDb));
-        audioEngine.setNormalizeGainDb(gainDb);
-      }
-    } else if (levelAvgDb > -120) {
-      resetLevelWatcher();
+    if (db > -50) {
+      levelAvgDb = levelAvgDb <= -120 ? db : levelAvgDb + (db - levelAvgDb) * 0.05;
+      const gainDb = Math.max(-9, Math.min(9, -17 - levelAvgDb));
+      audioEngine.setNormalizeGainDb(gainDb);
     }
-  }, 100);
+  }, 200);
 
   syncSettingsSlidersToState();
   updateHqRouting();
@@ -2182,7 +2188,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       animationFrameId = requestAnimationFrame(renderLoop);
 
-      if (document.body.classList.contains('perf') && timestamp - lastFrameTime < 33) return;
+      const frameLimit = document.body.classList.contains('perf') || !state.isWindowVisible ? 33 : 16;
+      if (timestamp - lastFrameTime < frameLimit) return;
       lastFrameTime = timestamp;
 
       const isVisualizerVisible = miniCanvas && miniCanvas.offsetParent !== null && !document.hidden;
@@ -2627,7 +2634,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (idx !== -1) {
       currentWaveFocusedIndex = idx;
-      scrollCarouselTo(vibeGrid, idx);
       const titleEl = document.getElementById(isWave ? 'my-wave-focused-title' : 'jump-focused-title');
       const artistEl = document.getElementById(isWave ? 'my-wave-focused-artist' : 'jump-focused-artist');
       const ambientEl = document.getElementById(isWave ? 'my-wave-ambient-light' : 'jump-ambient-light');
@@ -2643,21 +2649,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || track.image || '';
       updateAmbientLight(ambientEl, thumb);
 
-      const cards = vibeGrid.querySelectorAll('.my-wave-track-card');
-      cards.forEach((card, j) => {
-        const dist = Math.abs(j - idx);
-        card.classList.remove('near', 'far');
-        if (dist === 0) {
-          card.style.zIndex = '10';
-        } else if (dist === 1) {
-          card.classList.add('near');
-          card.style.zIndex = '5';
-        } else {
-          card.classList.add('far');
-          card.style.zIndex = '1';
-        }
-      });
-      vibeGrid._focusedIndex = idx;
+      scrollCarouselTo(vibeGrid, idx);
     }
   }
 
@@ -5569,62 +5561,185 @@ document.addEventListener('DOMContentLoaded', async () => {
     return [...defaultPresets, ...state.customPresets];
   }
 
+  const PRESET_METAS = {
+    p_default: {
+      tag: 'Clean',
+      category: 'all',
+      desc: 'Original mix • Clean linear DSP',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>'
+    },
+    p_bass_boost: {
+      tag: 'Sub-Bass',
+      category: 'bass',
+      desc: '+8.5dB Low • 808 Rumble boost',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><line x1="12" y1="6" x2="12.01" y2="6"/></svg>'
+    },
+    p_speedup: {
+      tag: 'Tempo',
+      category: 'pitch',
+      desc: '+35% speed • Original vocal pitch',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+    },
+    p_speedup_pitch: {
+      tag: 'Tape',
+      category: 'pitch',
+      desc: '+30% speed • Tape chipmunk pitch',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>'
+    },
+    p_slowed: {
+      tag: 'Slowed',
+      category: 'pitch',
+      desc: '0.82x speed • 65% Reverb & delay',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>'
+    },
+    p_nightcore: {
+      tag: 'Pitch',
+      category: 'pitch',
+      desc: '+25% pitch • Light night ambiance',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+    },
+    p_vaporwave: {
+      tag: 'Vibe',
+      category: 'space',
+      desc: 'Chopped 0.80x • Delay & deep hall',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>'
+    },
+    p_phonk: {
+      tag: 'Phonk',
+      category: 'bass',
+      desc: 'Drift 808 • Drive distortion + bass',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>'
+    },
+    p_lofi: {
+      tag: 'Lo-Fi',
+      category: 'space',
+      desc: 'Warm vinyl tape • Radio roll-off',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>'
+    },
+    p_spatialize: {
+      tag: '8D Spatial',
+      category: 'space',
+      desc: '360° wide hall • 72% Reverb matrix',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>'
+    },
+    p_crystal: {
+      tag: 'Air',
+      category: 'space',
+      desc: '+7.5dB Treble air • Vocal clarity',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>'
+    },
+    p_distortion: {
+      tag: 'Drive',
+      category: 'bass',
+      desc: '75% WaveShaper • Hard saturated drive',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>'
+    }
+  };
+
+  let currentPresetFilter = 'all';
+
+  function getPresetMeta(p) {
+    if (PRESET_METAS[p.id]) return PRESET_METAS[p.id];
+    return {
+      tag: 'Custom',
+      category: 'custom',
+      desc: 'User custom sound DSP preset',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>'
+    };
+  }
+
   function renderPresets() {
     if (!el.presetsContainer) return;
     el.presetsContainer.innerHTML = '';
     const all = getAllPresets();
-    all.forEach(p => {
-      const chip = document.createElement('div');
-      chip.className = 'preset-chip';
-      if (state.activePresetId === p.id) chip.classList.add('active');
+
+    const activePreset = all.find(p => p.id === state.activePresetId);
+    const bannerText = document.getElementById('presets-active-name');
+    if (bannerText) {
+      bannerText.textContent = activePreset ? activePreset.name : 'Clean Sound';
+    }
+
+    const filtered = all.filter(p => {
+      if (currentPresetFilter === 'all') return true;
+      const meta = getPresetMeta(p);
+      if (currentPresetFilter === 'custom') return p.id.startsWith('custom_');
+      return meta.category === currentPresetFilter;
+    });
+
+    if (filtered.length === 0) {
+      el.presetsContainer.innerHTML = '<div style="text-align: center; padding: 24px 12px; color: var(--md-sys-color-outline); font-size: calc(12px * var(--font-scale, 1));">No presets in this category</div>';
+      return;
+    }
+
+    filtered.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'preset-card';
+      const isActive = state.activePresetId === p.id;
+      if (isActive) card.classList.add('active');
 
       const isCustom = p.id.startsWith('custom_');
-      chip.dataset.isCustom = isCustom ? 'true' : 'false';
-      chip.dataset.presetId = p.id;
+      card.dataset.isCustom = isCustom ? 'true' : 'false';
+      card.dataset.presetId = p.id;
 
-      chip.innerHTML = `
-      <span class="preset-name-label">${escapeHtml(p.name)}</span>
-      ${isCustom ? `
-        <div class="preset-actions">
-          <button type="button" class="preset-btn-action btn-rename-p" title="Rename" aria-label="Rename preset">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-          </button>
-          <button type="button" class="preset-btn-action btn-delete-p" title="Delete" aria-label="Delete preset">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>` : ''}
-        `;
+      const meta = getPresetMeta(p);
 
-        if (isCustom) {
-          const btnRename = chip.querySelector('.btn-rename-p');
-          const btnDelete = chip.querySelector('.btn-delete-p');
-          if (btnRename) {
-            btnRename.addEventListener('click', (e) => {
-              e.stopPropagation();
-              openRenamePresetModal(p);
-            });
-          }
-          if (btnDelete) {
-            btnDelete.addEventListener('click', (e) => {
-              e.stopPropagation();
-              openDeletePresetConfirm(p);
-            });
-          }
+      card.innerHTML = `
+        <div class="preset-card-icon">${meta.icon}</div>
+        <div class="preset-card-body">
+          <div class="preset-card-header-row">
+            <span class="preset-card-title">${escapeHtml(p.name)}</span>
+            <span class="preset-card-tag">${meta.tag}</span>
+          </div>
+          <span class="preset-card-desc">${escapeHtml(meta.desc)}</span>
+        </div>
+        <div class="preset-card-end">
+          <div class="preset-active-check" title="Active">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          ${isCustom ? `
+            <button type="button" class="preset-card-action-btn btn-rename-p" title="Rename preset" aria-label="Rename preset">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </button>
+            <button type="button" class="preset-card-action-btn btn-delete-p" title="Delete preset" aria-label="Delete preset">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          ` : ''}
+        </div>
+      `;
+
+      if (isCustom) {
+        const btnRename = card.querySelector('.btn-rename-p');
+        const btnDelete = card.querySelector('.btn-delete-p');
+        if (btnRename) {
+          btnRename.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openRenamePresetModal(p);
+          });
         }
+        if (btnDelete) {
+          btnDelete.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openDeletePresetConfirm(p);
+          });
+        }
+      }
 
-        chip.addEventListener('click', (e) => {
-          if (e.target.closest('.btn-delete-p') || e.target.closest('.btn-rename-p')) return;
-          applyPreset(p);
-        });
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-delete-p') || e.target.closest('.btn-rename-p')) return;
+        applyPreset(p);
+      });
 
-        el.presetsContainer.appendChild(chip);
+      el.presetsContainer.appendChild(card);
     });
+
     updatePresetsFade();
   }
 
   function clearActivePresetHighlight() {
     if (!el.presetsContainer) return;
-    el.presetsContainer.querySelectorAll('.preset-chip.active').forEach((chip) => chip.classList.remove('active'));
+    el.presetsContainer.querySelectorAll('.preset-card.active, .preset-chip.active').forEach((chip) => chip.classList.remove('active'));
+    const bannerText = document.getElementById('presets-active-name');
+    if (bannerText) bannerText.textContent = 'Clean Sound';
   }
 
   function updateFade(el) {
@@ -10206,7 +10321,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   enhanceSliders();
   let sliderRaf = 0;
-  new MutationObserver(() => { if (sliderRaf) return; sliderRaf = requestAnimationFrame(() => { sliderRaf = 0; enhanceSliders(); }); }).observe(document.body, { childList: true, subtree: true });
+  const settingsPaneEl = document.getElementById('view-settings');
+  if (settingsPaneEl) {
+    new MutationObserver(() => { if (sliderRaf) return; sliderRaf = requestAnimationFrame(() => { sliderRaf = 0; enhanceSliders(settingsPaneEl); }); }).observe(settingsPaneEl, { childList: true, subtree: true });
+  }
 
   (function initHueSegments() {
     const input = document.getElementById('slider-theme-hue');
@@ -10988,8 +11106,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
   let swRaf = 0;
-  new MutationObserver(() => { if (swRaf) return; swRaf = requestAnimationFrame(() => { swRaf = 0; decorateSwitches(); }); }).observe(document.body, { childList: true, subtree: true });
+  if (settingsPaneEl) {
+    new MutationObserver(() => { if (swRaf) return; swRaf = requestAnimationFrame(() => { swRaf = 0; decorateSwitches(); }); }).observe(settingsPaneEl, { childList: true, subtree: true });
+  }
   decorateSwitches();
+
+  // Preset Reset & Category Filter Initialization
+  const btnResetPreset = document.getElementById('btn-reset-preset');
+  if (btnResetPreset) {
+    btnResetPreset.addEventListener('click', () => {
+      applyPreset(defaultPresets[0]);
+      showToast('Sound reset to clean default');
+    });
+  }
+
+  const presetFilterBar = document.getElementById('presets-filter-bar');
+  if (presetFilterBar) {
+    presetFilterBar.querySelectorAll('.preset-filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        presetFilterBar.querySelectorAll('.preset-filter-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentPresetFilter = btn.dataset.filter || 'all';
+        renderPresets();
+      });
+    });
+  }
 
   const settingWinMediaKeys = document.getElementById('setting-win-media-keys');
   const btnWinMediaKeys = document.getElementById('btn-win-media-keys');
@@ -12896,6 +13037,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const dominantColorsCache = new Map();
+  let sharedCoverCanvas = null;
+  let sharedCoverCtx = null;
 
   function getCoverDominantColors(url) {
     if (!url) return Promise.resolve(['rgb(80, 80, 120)', 'rgb(120, 80, 100)']);
@@ -12907,12 +13050,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       img.crossOrigin = 'Anonymous';
       img.onload = () => {
         try {
-          const canvas = document.createElement('canvas');
-          canvas.width = 32;
-          canvas.height = 32;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, 32, 32);
-          const data = ctx.getImageData(0, 0, 32, 32).data;
+          if (!sharedCoverCanvas) {
+            sharedCoverCanvas = document.createElement('canvas');
+            sharedCoverCanvas.width = 32;
+            sharedCoverCanvas.height = 32;
+            sharedCoverCtx = sharedCoverCanvas.getContext('2d', { willReadFrequently: true });
+          }
+          sharedCoverCtx.clearRect(0, 0, 32, 32);
+          sharedCoverCtx.drawImage(img, 0, 0, 32, 32);
+          const data = sharedCoverCtx.getImageData(0, 0, 32, 32).data;
 
           const buckets = new Map();
           for (let i = 0; i < data.length; i += 4) {
@@ -12934,9 +13080,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           const c2 = sorted[1] ? `rgb(${sorted[1][0]})` : sorted[0] ? `rgb(${sorted[0][0]})` : 'rgb(140, 80, 100)';
 
           const result = [c1, c2];
+          if (dominantColorsCache.size >= 100) {
+            const firstKey = dominantColorsCache.keys().next().value;
+            dominantColorsCache.delete(firstKey);
+          }
           dominantColorsCache.set(url, result);
-          canvas.width = 0;
-          canvas.height = 0;
           img.onload = null;
           img.onerror = null;
           img.src = '';
@@ -13204,26 +13352,97 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function scrollCarouselTo(row, idx) {
+  function scrollCarouselTo(row, idx, instant = false) {
     if (!row) return;
     const cards = row.querySelectorAll('.my-wave-track-card');
     if (cards.length === 0) return;
     const clampedIdx = Math.max(0, Math.min(cards.length - 1, idx));
-    row._targetIndex = clampedIdx;
+
+    if (row._carouselAnim) {
+      cancelAnimationFrame(row._carouselAnim);
+      row._carouselAnim = null;
+    }
+
     let step = 304;
     if (cards.length > 1) {
       step = cards[1].offsetLeft - cards[0].offsetLeft;
     } else if (cards.length === 1) {
       step = cards[0].offsetWidth + 24;
     }
+    if (!step || step <= 0) step = 304;
+
     const maxScroll = Math.max(0, row.scrollWidth - row.clientWidth);
     const target = Math.max(0, Math.min(maxScroll, clampedIdx * step));
-    row.scrollTo({ left: target, behavior: 'smooth' });
+
+    row._targetIndex = clampedIdx;
+
+    const applyCardClasses = (targetIdx) => {
+      cards.forEach((card, j) => {
+        const dist = Math.abs(j - targetIdx);
+        card.classList.remove('near', 'far');
+        if (dist === 0) {
+          card.style.zIndex = '10';
+        } else if (dist === 1) {
+          card.classList.add('near');
+          card.style.zIndex = '5';
+        } else {
+          card.classList.add('far');
+          card.style.zIndex = '1';
+        }
+      });
+      row._focusedIndex = targetIdx;
+      if (row.id === 'home-vibe-grid') {
+        currentWaveFocusedIndex = targetIdx;
+      }
+    };
+
+    if (instant || Math.abs(row.scrollLeft - target) < 2) {
+      row.scrollLeft = target;
+      row._targetIndex = undefined;
+      applyCardClasses(clampedIdx);
+      return;
+    }
+
+    const startX = row.scrollLeft;
+    const deltaX = target - startX;
+    const startTime = performance.now();
+    const duration = Math.min(420, Math.max(260, Math.abs(deltaX) * 0.75));
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function stepAnim(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const eased = easeOutCubic(progress);
+
+      row.scrollLeft = startX + deltaX * eased;
+
+      const currentLogical = (progress >= 0.5) ? clampedIdx : (typeof row._focusedIndex === 'number' ? row._focusedIndex : clampedIdx);
+      if (row._focusedIndex !== currentLogical) {
+        applyCardClasses(currentLogical);
+      }
+
+      if (progress < 1) {
+        row._carouselAnim = requestAnimationFrame(stepAnim);
+      } else {
+        row.scrollLeft = target;
+        row._carouselAnim = null;
+        row._targetIndex = undefined;
+        applyCardClasses(clampedIdx);
+      }
+    }
+
+    row._carouselAnim = requestAnimationFrame(stepAnim);
   }
 
   function updateCoverflowCards(row, titleEl, artistEl, ambientEl, tracks) {
     if (!row) row = document.getElementById('home-vibe-grid');
     if (!row) return;
+    if (typeof row._targetIndex === 'number') {
+      return;
+    }
     if (!tracks) {
       tracks = (row.id === 'home-vibe-grid')
         ? (homeMode === 'recent' ? jumpBackCurrentTracks : myWaveCurrentTracks)
@@ -13247,9 +13466,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const floatIndex = row.scrollLeft / step;
     const newFocused = Math.max(0, Math.min(cards.length - 1, Math.round(floatIndex)));
-    if (typeof row._targetIndex === 'number' && Math.abs(row.scrollLeft - (row._targetIndex * step)) < 12) {
-      row._targetIndex = undefined;
-    }
 
     const prevFocused = (typeof row._focusedIndex === 'number') ? row._focusedIndex : -1;
     if (newFocused !== prevFocused) {
@@ -13266,22 +13482,21 @@ document.addEventListener('DOMContentLoaded', async () => {
           card.style.zIndex = '1';
         }
       });
-    }
-
-    if (newFocused !== prevFocused && tracks[newFocused]) {
       row._focusedIndex = newFocused;
       if (row.id === 'home-vibe-grid') {
         currentWaveFocusedIndex = newFocused;
       }
       const track = tracks[newFocused];
-      if (titleEl && artistEl) {
-        titleEl.textContent = track.title || 'Untitled';
-        artistEl.textContent = track.artist || 'Unknown';
-        updateTextFade(titleEl);
-        updateTextFade(artistEl);
+      if (track) {
+        if (titleEl && artistEl) {
+          titleEl.textContent = track.title || 'Untitled';
+          artistEl.textContent = track.artist || 'Unknown';
+          updateTextFade(titleEl);
+          updateTextFade(artistEl);
+        }
+        const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || track.image || '';
+        updateAmbientLight(ambientEl, thumb);
       }
-      const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || track.image || '';
-      updateAmbientLight(ambientEl, thumb);
     }
   }
 

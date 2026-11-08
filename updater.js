@@ -69,8 +69,13 @@ function initUpdater(getWindow) {
   });
 
   autoUpdater.on('error', (err) => {
+    const wasManual = manualCheck;
     manualCheck = false;
-    send('update-error', { message: err && err.message ? err.message : 'Update failed' });
+    if (wasManual) {
+      send('update-error', { message: err && err.message ? err.message : 'Update failed' });
+    } else {
+      console.warn('[updater] Background check notice:', err && err.message ? err.message : err);
+    }
   });
 
   const check = () => autoUpdater.checkForUpdates().catch(() => {});
