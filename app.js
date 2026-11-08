@@ -13264,8 +13264,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let currentWaveFocusedIndex = 0;
 
-  async function extendMyWaveQueue() {
-    if (!state.myWaveActive || isExtendingMyWave) return false;
+  const WAVE_AHEAD_TARGET = 5;
+  const WAVE_EXTEND_BATCH = 10;
+
+  function waveCardsAhead(idx) {
+    const list = Array.isArray(myWaveCurrentTracks) ? myWaveCurrentTracks : [];
+    const from = (typeof idx === 'number') ? idx : currentWaveFocusedIndex;
+    return list.length - 1 - from;
+  }
+
+  function ensureWaveCardsAhead(idx) {
+    if (homeMode !== 'wave') return;
+    if (isExtendingMyWave) return;
+    if (waveCardsAhead(idx) >= WAVE_AHEAD_TARGET) return;
+    extendMyWaveQueue({ browse: true });
+  }
+
+  async function extendMyWaveQueue(options = {}) {
+    const forBrowsing = options && options.browse === true;
+    if (!state.myWaveActive && !forBrowsing) return false;
+    if (isExtendingMyWave) return false;
     isExtendingMyWave = true;
     try {
       const profile = await computeTasteProfile();
@@ -13315,49 +13333,104 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-      const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/vibe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          history: (state.history || []).slice(0, 30),
-          favorites: (state.favorites || []).slice(0, 25),
-          platform: 'soundcloud',
-          limit: 10,
-          clientProfile: profile,
-          seeds: dynamicSeeds.length > 0 ? dynamicSeeds : profile.seeds,
-          avoid: getWaveAvoid(),
-          refresh: true
-        })
-      });
-      const data = await res.json();
-      if (data.success && Array.isArray(data.tracks) && data.tracks.length > 0) {
-        const existingIds = new Set(state.queue.map(t => String(t.id || '')));
-        const existingKeys = new Set(state.queue.map(t => getTrackNormalizedKey(t.artist, t.title)));
-        const newTracks = data.tracks.filter(t => {
+      let vibePool = [];
+      try {
+        const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/vibe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            history: (state.history || []).slice(0, 30),
+            favorites: (state.favorites || []).slice(0, 25),
+            platform: 'soundcloud',
+            limit: WAVE_EXTEND_BATCH,
+            clientProfile: profile,
+            seeds: dynamicSeeds.length > 0 ? dynamicSeeds : profile.seeds,
+            avoid: getWaveAvoid(),
+            refresh: true
+          })
+        });
+        const data = await res.json();
+        if (data && data.success && Array.isArray(data.tracks)) vibePool = data.tracks;
+      } catch (e) {}
+
+      if (!Array.isArray(myWaveCurrentTracks)) myWaveCurrentTracks = [];
+
+      // Dedupe against the cards already on screen. The playback queue is only
+      // considered when we are actually going to append there as well.
+      const existingIds = new Set();
+      const existingKeys = new Set();
+      const rememberTrack = (t) => {
+        if (!t) return;
+        const cid = String(t.id || '');
+        if (cid) existingIds.add(cid);
+        const nkey = getTrackNormalizedKey(t.artist, t.title);
+        if (nkey && nkey !== '::') existingKeys.add(nkey);
+      };
+      myWaveCurrentTracks.forEach(rememberTrack);
+      if (state.myWaveActive) (state.queue || []).forEach(rememberTrack);
+
+      const collectNew = (pool) => {
+        const picked = [];
+        (pool || []).forEach(t => {
+          if (!t) return;
           const cid = String(t.id || '');
           const nkey = getTrackNormalizedKey(t.artist, t.title);
-          return !existingIds.has(cid) && !existingKeys.has(nkey);
+          if (cid && existingIds.has(cid)) return;
+          if (nkey && nkey !== '::' && existingKeys.has(nkey)) return;
+          rememberTrack(t);
+          picked.push(t);
         });
-        if (newTracks.length > 0) {
-          state.queue.push(...newTracks);
-          if (Array.isArray(myWaveCurrentTracks)) {
-            const vibeGrid = document.getElementById('home-vibe-grid');
-            const frag = document.createDocumentFragment();
-            newTracks.forEach(t => {
-              const newIdx = myWaveCurrentTracks.length;
-              myWaveCurrentTracks.push(t);
-              if (vibeGrid) {
-                frag.appendChild(buildHomeCard(t, 'wave', newIdx));
-              }
-            });
-            if (vibeGrid) vibeGrid.appendChild(frag);
+        return picked;
+      };
+
+      let newTracks = collectNew(vibePool);
+
+      // Fresh profiles (or a recommender miss) fall back to the hot picks so
+      // the wave never dead-ends on an empty batch.
+      if (newTracks.length === 0) {
+        try {
+          const hotRes = await fetch(`http://127.0.0.1:${state.serverPort}/api/hot?limit=16`);
+          const hotData = await hotRes.json();
+          if (hotData && hotData.success && Array.isArray(hotData.tracks)) {
+            newTracks = collectNew(hotData.tracks);
           }
-          updateQueueBadge();
-          renderQueueView();
-          return true;
-        }
+        } catch (e) {}
       }
-      return false;
+
+      if (newTracks.length === 0) return false;
+
+      const vibeGrid = document.getElementById('home-vibe-grid');
+      const canRender = !!vibeGrid && homeMode === 'wave';
+      const frag = document.createDocumentFragment();
+
+      newTracks.forEach(t => {
+        const newIdx = myWaveCurrentTracks.length;
+        myWaveCurrentTracks.push(t);
+        if (canRender) {
+          frag.appendChild(buildHomeCard(t, 'wave', newIdx));
+        }
+      });
+
+      if (canRender) {
+        vibeGrid.appendChild(frag);
+        const focused = (typeof vibeGrid._focusedIndex === 'number') ? vibeGrid._focusedIndex : 0;
+        applyHomeCardClasses(vibeGrid, focused);
+      }
+
+      if (state.myWaveActive) {
+        state.queue.push(...newTracks);
+        updateQueueBadge();
+        renderQueueView();
+      }
+
+      // If the server returned a short batch, keep topping up until the
+      // requested look-ahead is covered (each success grows the list, so
+      // this converges and cannot spin).
+      if (waveCardsAhead() < WAVE_AHEAD_TARGET) {
+        setTimeout(() => { ensureWaveCardsAhead(); }, 0);
+      }
+
+      return newTracks.length;
     } catch (e) {
       return false;
     } finally {
@@ -13447,23 +13520,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     row._targetIndex = clampedIdx;
 
     const applyCardClasses = (targetIdx) => {
-      cards.forEach((card, j) => {
-        const dist = Math.abs(j - targetIdx);
-        card.classList.remove('near', 'far');
-        if (dist === 0) {
-          card.style.zIndex = '10';
-        } else if (dist === 1) {
-          card.classList.add('near');
-          card.style.zIndex = '5';
-        } else {
-          card.classList.add('far');
-          card.style.zIndex = '1';
-        }
-      });
-      row._focusedIndex = targetIdx;
-      if (row.id === 'home-vibe-grid') {
-        currentWaveFocusedIndex = targetIdx;
-      }
+      setHomeCardFocus(row, targetIdx);
     };
 
     if (instant || Math.abs(row.scrollLeft - target) < 2) {
@@ -13507,6 +13564,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     row._carouselAnim = requestAnimationFrame(stepAnim);
   }
 
+  function getHomeTracksForRow(row) {
+    if (!row) return [];
+    if (row.id === 'home-vibe-grid') {
+      return (homeMode === 'recent') ? jumpBackCurrentTracks : myWaveCurrentTracks;
+    }
+    return jumpBackCurrentTracks;
+  }
+
+  function applyHomeCardClasses(row, targetIdx) {
+    if (!row) return;
+    const cards = row.querySelectorAll('.my-wave-track-card');
+    cards.forEach((card, j) => {
+      const dist = Math.abs(j - targetIdx);
+      card.classList.remove('near', 'far');
+      if (dist === 0) {
+        card.style.zIndex = '10';
+      } else if (dist === 1) {
+        card.classList.add('near');
+        card.style.zIndex = '5';
+      } else {
+        card.classList.add('far');
+        card.style.zIndex = '1';
+      }
+    });
+  }
+
+  function setHomeCardFocus(row, targetIdx, tracks, elements) {
+    if (!row) return;
+    const cards = row.querySelectorAll('.my-wave-track-card');
+    if (cards.length === 0) return;
+    const idx = Math.max(0, Math.min(cards.length - 1, targetIdx));
+    const isHome = row.id === 'home-vibe-grid';
+
+    applyHomeCardClasses(row, idx);
+    row._focusedIndex = idx;
+    if (isHome) currentWaveFocusedIndex = idx;
+
+    const list = tracks || getHomeTracksForRow(row);
+    const track = list && list[idx];
+    if (track) {
+      const els = elements || {};
+      const titleEl = els.titleEl || document.getElementById(isHome ? 'my-wave-focused-title' : 'jump-focused-title');
+      const artistEl = els.artistEl || document.getElementById(isHome ? 'my-wave-focused-artist' : 'jump-focused-artist');
+      const ambientEl = els.ambientEl || document.getElementById(isHome ? 'my-wave-ambient-light' : 'jump-ambient-light');
+      if (titleEl) {
+        titleEl.textContent = track.title || 'Untitled';
+        updateTextFade(titleEl);
+      }
+      if (artistEl) {
+        artistEl.textContent = track.artist || 'Unknown';
+        updateTextFade(artistEl);
+      }
+      const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || track.image || '';
+      updateAmbientLight(ambientEl, thumb);
+    }
+
+    if (isHome && homeMode === 'wave') {
+      ensureWaveCardsAhead(idx);
+    }
+  }
+
   function updateCoverflowCards(row, titleEl, artistEl, ambientEl, tracks) {
     if (!row) row = document.getElementById('home-vibe-grid');
     if (!row) return;
@@ -13514,9 +13632,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     if (!tracks) {
-      tracks = (row.id === 'home-vibe-grid')
-        ? (homeMode === 'recent' ? jumpBackCurrentTracks : myWaveCurrentTracks)
-        : jumpBackCurrentTracks;
+      tracks = getHomeTracksForRow(row);
     }
     if (!tracks || tracks.length === 0) return;
     const cards = row.querySelectorAll('.my-wave-track-card');
@@ -13539,34 +13655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const prevFocused = (typeof row._focusedIndex === 'number') ? row._focusedIndex : -1;
     if (newFocused !== prevFocused) {
-      cards.forEach((card, j) => {
-        const dist = Math.abs(j - newFocused);
-        card.classList.remove('near', 'far');
-        if (dist === 0) {
-          card.style.zIndex = '10';
-        } else if (dist === 1) {
-          card.classList.add('near');
-          card.style.zIndex = '5';
-        } else {
-          card.classList.add('far');
-          card.style.zIndex = '1';
-        }
-      });
-      row._focusedIndex = newFocused;
-      if (row.id === 'home-vibe-grid') {
-        currentWaveFocusedIndex = newFocused;
-      }
-      const track = tracks[newFocused];
-      if (track) {
-        if (titleEl && artistEl) {
-          titleEl.textContent = track.title || 'Untitled';
-          artistEl.textContent = track.artist || 'Unknown';
-          updateTextFade(titleEl);
-          updateTextFade(artistEl);
-        }
-        const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || track.image || '';
-        updateAmbientLight(ambientEl, thumb);
-      }
+      setHomeCardFocus(row, newFocused, tracks, { titleEl, artistEl, ambientEl });
     }
   }
 
