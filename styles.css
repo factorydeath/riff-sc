@@ -731,8 +731,8 @@ body.is-window-resizing .platform-switch-container {
 }
 
 .rail-drawer.drawer-presets-mode {
-  width: 220px;
-  max-width: 220px;
+  width: 280px;
+  max-width: 280px;
 }
 
 .sidebar.has-drawer-open {
@@ -834,6 +834,8 @@ body.is-window-resizing .platform-switch-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
   padding: 8px 12px;
   margin-bottom: 8px;
   background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 60%, transparent);
@@ -864,12 +866,14 @@ body.is-window-resizing .platform-switch-container {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .btn-presets-toolbar {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
   padding: 4px 10px;
   font-size: calc(11px * var(--font-scale, 1));
   font-weight: 500;
@@ -890,6 +894,7 @@ body.is-window-resizing .platform-switch-container {
 .presets-filter-bar {
   display: flex;
   gap: 6px;
+  flex-shrink: 0;
   overflow-x: auto;
   scrollbar-width: none;
   padding: 2px 2px 8px;
@@ -991,6 +996,7 @@ body.is-window-resizing .platform-switch-container {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
 }
 
 .preset-card-title {
@@ -1000,6 +1006,8 @@ body.is-window-resizing .platform-switch-container {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .preset-card.active .preset-card-title {

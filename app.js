@@ -677,14 +677,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     return '#' + [f(0), f(8), f(4)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('');
   }
 
+  const advCache = new Map();
   function getAdv(name, defaultVal = true) {
+    if (advCache.has(name)) return advCache.get(name);
     const val = localStorage.getItem(`riff_adv_${name}`);
-    if (val === null) return defaultVal;
-    return val === 'true';
+    const out = val === null ? defaultVal : val === 'true';
+    advCache.set(name, out);
+    return out;
   }
 
   function setAdv(name, boolVal) {
     localStorage.setItem(`riff_adv_${name}`, boolVal ? 'true' : 'false');
+    advCache.set(name, !!boolVal);
   }
 
   function applyReducedMotionSetting() {
@@ -2013,7 +2017,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   syncSettingsSlidersToState();
   updateHqRouting();
-  renderPresets();
+  // NOTE: renderPresets() must not run here — it depends on PRESET_METAS / currentPresetFilter
+  // declared further down this handler (calling it early throws a TDZ ReferenceError and kills
+  // the whole init). Presets are rendered at the end of init and every time the drawer opens.
 
   function initAudioContext() {
     audioEngine.init(el.nativeAudio);
@@ -3323,7 +3329,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function getLyricsWordStyle() { return localStorage.getItem('riff_lyrics_word_style') === 'words' ? 'words' : 'gradient'; }
+  let lyricsWordStyleCache = null;
+  function getLyricsWordStyle() {
+    if (lyricsWordStyleCache === null) lyricsWordStyleCache = localStorage.getItem('riff_lyrics_word_style') === 'words' ? 'words' : 'gradient';
+    return lyricsWordStyleCache;
+  }
   function isGradientMode() { return state.lyricsMode === 'word' && getAdv('karaoke_words', true) && getLyricsWordStyle() === 'gradient'; }
 
   function renderLyricsView() {
@@ -3742,8 +3752,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let gradientRaf = 0;
+  let activeGradientLineEl = null;
   function updateActiveGradient() {
-    const lineEl = document.querySelector('.lyric-line.active.gradient-line');
+    let lineEl = activeGradientLineEl;
+    if (!lineEl || !lineEl.isConnected || !lineEl.classList.contains('active') || !lineEl.classList.contains('gradient-line')) {
+      lineEl = document.querySelector('.lyric-line.active.gradient-line');
+      activeGradientLineEl = lineEl;
+    }
     if (!lineEl || !el.nativeAudio) return;
     const fill = lineEl.firstElementChild;
     if (!fill) return;
@@ -3824,6 +3839,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     return Math.max(0, top - (parentH / 2) + (lineH / 2));
   }
 
+  // Cached lyrics-derived data (invalidated by reference change of state.syncedLyrics
+  // or a re-render of the lyrics container) — avoids rebuilding arrays and querying the
+  // DOM on every animation frame.
+  let validLyricsCacheSrc = null;
+  let validLyricsCacheCustom = null;
+  let validLyricsCache = null;
+  function getValidLyricLines() {
+    if (validLyricsCacheSrc !== state.syncedLyrics || validLyricsCacheCustom !== state.isCustomLyrics) {
+      validLyricsCacheSrc = state.syncedLyrics;
+      validLyricsCacheCustom = state.isCustomLyrics;
+      const arr = [];
+      for (let i = 0; i < state.syncedLyrics.length; i++) {
+        const startTime = getLineStartTime(i);
+        if (startTime >= 0) arr.push({ time: startTime, index: i });
+      }
+      validLyricsCache = arr;
+    }
+    return validLyricsCache;
+  }
+
+  let lyricLineElsCache = null;
+  let lyricLineElsCacheFirst = null;
+  let lyricLineElsCacheCount = -1;
+  function getCachedLyricLineEls() {
+    const parent = el.lyricsContainer;
+    if (!parent) return null;
+    const first = parent.firstElementChild;
+    if (!lyricLineElsCache || lyricLineElsCacheFirst !== first || lyricLineElsCacheCount !== parent.childElementCount) {
+      lyricLineElsCache = parent.querySelectorAll('.lyric-line');
+      lyricLineElsCacheFirst = first;
+      lyricLineElsCacheCount = parent.childElementCount;
+    }
+    return lyricLineElsCache;
+  }
+
+  let broadcastWordsCacheSrc = null;
+  let broadcastWordsCacheLine = -1;
+  let broadcastWordsCache = null;
+
   function updateSyncedLyricsHighlight(currentTime) {
     if (state.syncedLyrics.length === 0 || !state.isWindowVisible) return;
     let activeIndex = -1;
@@ -3831,13 +3885,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const karaokeWordsEnabled = getAdv('karaoke_words', true);
     const gradientMode = isGradientMode();
 
-    const validLines = [];
-    for (let i = 0; i < state.syncedLyrics.length; i++) {
-      const startTime = getLineStartTime(i);
-      if (startTime >= 0) {
-        validLines.push({ time: startTime, index: i });
-      }
-    }
+    const validLines = getValidLyricLines();
 
     const lookAhead = state.isCustomLyrics ? 0.25 : 0.0;
     const matchTime = currentTime + lookAhead;
@@ -3858,8 +3906,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       const lineDur = Math.max(0.5, nextLineTime - currentLineTime);
       const progress = Math.min(Math.max((matchTime - currentLineTime) / lineDur, 0), 0.999);
 
-      const cleanText = state.syncedLyrics[activeIndex].text.replace(/<[^>]+>/g, '').trim();
-      const words = cleanText.split(/\s+/).filter(Boolean);
+      let words = broadcastWordsCache;
+      if (!words || broadcastWordsCacheSrc !== state.syncedLyrics || broadcastWordsCacheLine !== activeIndex) {
+        broadcastWordsCacheSrc = state.syncedLyrics;
+        broadcastWordsCacheLine = activeIndex;
+        const cleanText = state.syncedLyrics[activeIndex].text.replace(/<[^>]+>/g, '').trim();
+        words = broadcastWordsCache = cleanText.split(/\s+/).filter(Boolean);
+      }
       const totalWords = words.length;
       const currentWordIndex = totalWords > 0 ? Math.floor(progress * totalWords) : 0;
       const activeWordText = totalWords > 0 ? words[currentWordIndex] : '';
@@ -3895,7 +3948,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       state.lastActiveLyricIdx = activeIndex;
     }
 
-    document.querySelectorAll('.lyric-line').forEach((lineEl, idx) => {
+    const lineEls = getCachedLyricLineEls();
+    if (!lineEls) return;
+    for (let idx = 0; idx < lineEls.length; idx++) {
+      const lineEl = lineEls[idx];
       if (lineChanged) lineEl.style.setProperty('--dist', activeIndex >= 0 ? Math.abs(idx - activeIndex) : 0);
       if (idx === activeIndex) {
         if (!lineEl.classList.contains('active')) lineEl.classList.add('active');
@@ -3913,28 +3969,32 @@ document.addEventListener('DOMContentLoaded', async () => {
           const totalWords = wordSpans.length;
           const currentWordIndex = Math.floor(progress * totalWords);
 
-          wordSpans.forEach((wSpan, wIdx) => {
-            if (wIdx < currentWordIndex) {
-              wSpan.className = 'lyric-word past-word';
-            } else if (wIdx === currentWordIndex) {
-              wSpan.className = 'lyric-word active-word';
-            } else {
-              wSpan.className = 'lyric-word';
-            }
-          });
+          for (let wIdx = 0; wIdx < totalWords; wIdx++) {
+            const wSpan = wordSpans[wIdx];
+            const desired = wIdx < currentWordIndex ? 'lyric-word past-word'
+              : (wIdx === currentWordIndex ? 'lyric-word active-word' : 'lyric-word');
+            if (wSpan.className !== desired) wSpan.className = desired;
+          }
         }
-      } else {
+      } else if (lineChanged) {
+        // Full cleanup pass only when the active line changed — non-active lines
+        // never change otherwise, so per-frame resets here are pure overhead.
         lineEl.classList.remove('active');
         if (lineEl.classList.contains('gradient-line')) {
           lineEl.firstElementChild && lineEl.firstElementChild.style.setProperty('--k', '0');
         }
         if (!gradientMode && karaokeWordsEnabled && state.lyricsMode === 'word') {
-          lineEl.querySelectorAll('.lyric-word').forEach(wSpan => {
-            wSpan.className = idx < activeIndex ? 'lyric-word past-word' : 'lyric-word';
-          });
+          const resetCls = idx < activeIndex ? 'lyric-word past-word' : 'lyric-word';
+          const wSpans = lineEl.querySelectorAll('.lyric-word');
+          for (let wIdx = 0; wIdx < wSpans.length; wIdx++) {
+            const wSpan = wSpans[wIdx];
+            if (wSpan.className !== resetCls) wSpan.className = resetCls;
+          }
         }
+      } else if (lineEl.classList.contains('active')) {
+        lineEl.classList.remove('active');
       }
-    });
+    }
     if (targetY !== null && parent) {
       if (shouldSnap) {
         cancelAnimationFrame(lyricsScrollRaf);
@@ -10321,10 +10381,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   enhanceSliders();
   let sliderRaf = 0;
-  const settingsPaneEl = document.getElementById('view-settings');
-  if (settingsPaneEl) {
-    new MutationObserver(() => { if (sliderRaf) return; sliderRaf = requestAnimationFrame(() => { sliderRaf = 0; enhanceSliders(settingsPaneEl); }); }).observe(settingsPaneEl, { childList: true, subtree: true });
+  // Only element insertions need a rescan; per-frame attribute/class/style writes
+  // (lyrics highlight, transforms, gradients) would otherwise re-trigger full
+  // document scans constantly.
+  function domMutationsHaveAddedElements(records) {
+    for (let i = 0; i < records.length; i++) {
+      const added = records[i].addedNodes;
+      if (added && added.length) return true;
+    }
+    return false;
   }
+  new MutationObserver((records) => { if (sliderRaf || !domMutationsHaveAddedElements(records)) return; sliderRaf = requestAnimationFrame(() => { sliderRaf = 0; enhanceSliders(); }); }).observe(document.body, { childList: true, subtree: true });
 
   (function initHueSegments() {
     const input = document.getElementById('slider-theme-hue');
@@ -11106,9 +11173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
   let swRaf = 0;
-  if (settingsPaneEl) {
-    new MutationObserver(() => { if (swRaf) return; swRaf = requestAnimationFrame(() => { swRaf = 0; decorateSwitches(); }); }).observe(settingsPaneEl, { childList: true, subtree: true });
-  }
+  new MutationObserver((records) => { if (swRaf || !domMutationsHaveAddedElements(records)) return; swRaf = requestAnimationFrame(() => { swRaf = 0; decorateSwitches(); }); }).observe(document.body, { childList: true, subtree: true });
   decorateSwitches();
 
   // Preset Reset & Category Filter Initialization
@@ -11420,6 +11485,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.stopPropagation();
         const val = opt.dataset.value;
         localStorage.setItem('riff_lyrics_word_style', val);
+        lyricsWordStyleCache = val === 'words' ? 'words' : 'gradient';
         if (lyricsWordStyleLabel) lyricsWordStyleLabel.textContent = opt.textContent;
         lyricsWordStyleMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.toggle('selected', o === opt));
         lyricsWordStyleDropdown.classList.remove('open');
@@ -12760,6 +12826,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (stored) {
         const parsed = JSON.parse(stored);
         analysisCache.set(cleanId, parsed);
+        if (analysisCache.size > 500) analysisCache.clear();
         return parsed;
       }
     } catch (e) {}
@@ -12770,6 +12837,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!trackId || !analysis) return;
     const cleanId = String(trackId).replace(/[^a-zA-Z0-9_-]/g, '_');
     analysisCache.set(cleanId, analysis);
+    if (analysisCache.size > 500) analysisCache.clear();
     try {
       localStorage.setItem(`riff_audio_analysis_${cleanId}`, JSON.stringify(analysis));
       fetch(`http://127.0.0.1:${state.serverPort}/api/track-analysis`, {
@@ -13091,6 +13159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           resolve(result);
         } catch (e) {
           const fallback = ['rgb(80, 100, 140)', 'rgb(140, 80, 100)'];
+          if (dominantColorsCache.size >= 100) dominantColorsCache.delete(dominantColorsCache.keys().next().value);
           dominantColorsCache.set(url, fallback);
           img.onload = null;
           img.onerror = null;
@@ -13104,6 +13173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
         const fallback = ['rgb(80, 100, 140)', 'rgb(140, 80, 100)'];
+        if (dominantColorsCache.size >= 100) dominantColorsCache.delete(dominantColorsCache.keys().next().value);
         dominantColorsCache.set(url, fallback);
         img.onload = null;
         img.onerror = null;
